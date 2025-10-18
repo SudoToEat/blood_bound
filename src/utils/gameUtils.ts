@@ -155,3 +155,45 @@ export function getFactionColor(faction: Faction): string {
     default: return 'text-gray-500'
   }
 }
+
+// 获取上一个玩家（考虑循环）
+export function getPreviousPlayer(players: Player[], currentPlayerId: number): Player | null {
+  if (!players || players.length === 0) {
+    return null
+  }
+
+  const currentIndex = players.findIndex(p => p.id === currentPlayerId)
+  if (currentIndex === -1) {
+    return null
+  }
+
+  // 如果当前玩家是第一个（索引0），则上一个是最后一个玩家
+  const previousIndex = currentIndex === 0 ? players.length - 1 : currentIndex - 1
+  return players[previousIndex]
+}
+
+// 获取上一个玩家展示给当前玩家的阵营
+// 如果上一个玩家是弄臣（Jester），则展示相反的阵营
+export function getPreviousPlayerDisplayedFaction(players: Player[], currentPlayerId: number): { player: Player; displayedFaction: Faction } | null {
+  const previousPlayer = getPreviousPlayer(players, currentPlayerId)
+  if (!previousPlayer) {
+    return null
+  }
+
+  let displayedFaction = previousPlayer.faction
+
+  // 如果上一个玩家是弄臣，展示相反的阵营
+  if (previousPlayer.characterType === CharacterType.Jester) {
+    if (previousPlayer.faction === Faction.Phoenix) {
+      displayedFaction = Faction.Gargoyle
+    } else if (previousPlayer.faction === Faction.Gargoyle) {
+      displayedFaction = Faction.Phoenix
+    }
+    // 中立阵营不改变
+  }
+
+  return {
+    player: previousPlayer,
+    displayedFaction
+  }
+}

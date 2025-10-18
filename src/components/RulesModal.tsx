@@ -7,7 +7,7 @@ interface RulesModalProps {
 }
 
 const RulesModal = ({ onClose }: RulesModalProps) => {
-  const [activeTab, setActiveTab] = useState<'overview' | 'characters' | 'abilities'>('overview')
+  const [activeTab, setActiveTab] = useState<'overview' | 'characters' | 'abilities' | 'reference'>('overview')
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4 overflow-y-auto">
@@ -25,23 +25,29 @@ const RulesModal = ({ onClose }: RulesModalProps) => {
         </div>
 
         <div className="flex border-b border-gray-700">
-          <button 
+          <button
             className={`px-4 py-2 ${activeTab === 'overview' ? 'bg-gray-700 text-white' : 'text-gray-400'}`}
             onClick={() => setActiveTab('overview')}
           >
             游戏概述
           </button>
-          <button 
+          <button
             className={`px-4 py-2 ${activeTab === 'characters' ? 'bg-gray-700 text-white' : 'text-gray-400'}`}
             onClick={() => setActiveTab('characters')}
           >
             角色能力
           </button>
-          <button 
+          <button
             className={`px-4 py-2 ${activeTab === 'abilities' ? 'bg-gray-700 text-white' : 'text-gray-400'}`}
             onClick={() => setActiveTab('abilities')}
           >
             能力卡
+          </button>
+          <button
+            className={`px-4 py-2 ${activeTab === 'reference' ? 'bg-gray-700 text-white' : 'text-gray-400'}`}
+            onClick={() => setActiveTab('reference')}
+          >
+            参考卡
           </button>
         </div>
 
@@ -76,22 +82,52 @@ const RulesModal = ({ onClose }: RulesModalProps) => {
 
           {activeTab === 'characters' && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {Array.from({ length: 10 }, (_, i) => i + 1).map((characterId) => {
+              {/* 凤凰氏族1-9 */}
+              {Array.from({ length: 9 }, (_, i) => i + 1).map((characterId) => {
                 const characterType = characterId as CharacterType
                 return (
-                  <div key={characterId} className="bg-gray-700 p-4 rounded-lg">
+                  <div key={'phoenix-' + characterId} className="bg-gray-700 p-4 rounded-lg">
                     <div className="flex justify-between items-center mb-2">
                       <h3 className="text-lg font-bold">
                         {getCharacterName(characterType)}
                       </h3>
-                      <span className={`px-2 py-1 rounded-full text-sm ${characterType === CharacterType.Inquisitor ? 'bg-yellow-800 text-yellow-200' : characterId <= 5 ? 'bg-red-800 text-red-200' : 'bg-blue-800 text-blue-200'}`}>
-                        {characterType === CharacterType.Inquisitor ? '中立' : characterId <= 5 ? '鳳凰氏族' : '石像鬼氏族'}
+                      <span className="px-2 py-1 rounded-full text-sm bg-red-800 text-red-200">
+                        鳳凰氏族
                       </span>
                     </div>
                     <p className="text-sm">{getCharacterAbilityDescription(characterType)}</p>
                   </div>
                 )
               })}
+              {/* 石像鬼氏族1-9 */}
+              {Array.from({ length: 9 }, (_, i) => i + 1).map((characterId) => {
+                const characterType = characterId as CharacterType
+                return (
+                  <div key={'gargoyle-' + characterId} className="bg-gray-700 p-4 rounded-lg">
+                    <div className="flex justify-between items-center mb-2">
+                      <h3 className="text-lg font-bold">
+                        {getCharacterName(characterType)}
+                      </h3>
+                      <span className="px-2 py-1 rounded-full text-sm bg-blue-800 text-blue-200">
+                        石像鬼氏族
+                      </span>
+                    </div>
+                    <p className="text-sm">{getCharacterAbilityDescription(characterType)}</p>
+                  </div>
+                )
+              })}
+              {/* 中立角色10 */}
+              <div key={'neutral-10'} className="bg-gray-700 p-4 rounded-lg">
+                <div className="flex justify-between items-center mb-2">
+                  <h3 className="text-lg font-bold">
+                    {getCharacterName(10 as CharacterType)}
+                  </h3>
+                  <span className="px-2 py-1 rounded-full text-sm bg-yellow-800 text-yellow-200">
+                    中立
+                  </span>
+                </div>
+                <p className="text-sm">{getCharacterAbilityDescription(10 as CharacterType)}</p>
+              </div>
             </div>
           )}
 
@@ -120,6 +156,38 @@ const RulesModal = ({ onClose }: RulesModalProps) => {
               <div className="bg-gray-700 p-4 rounded-lg">
                 <h3 className="text-lg font-bold mb-2">鵝毛筆</h3>
                 <p className="text-sm">长老角色能力会使用鵝毛筆能力，将数字最大的角色变成氏族族长。</p>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'reference' && (
+            <div className="flex flex-col items-center">
+              <h3 className="text-xl font-bold mb-4">角色和技能等级参考卡</h3>
+              <p className="text-sm text-gray-400 mb-4">角色在游戏开始时向左边玩家展示的是该对象族的标记</p>
+              <div className="w-full max-w-2xl">
+                <img
+                  src="/src/assets/rules/reference-card.jpg"
+                  alt="角色和技能等级参考卡"
+                  className="w-full h-auto rounded-lg shadow-lg"
+                  onError={(e) => {
+                    e.currentTarget.style.display = 'none';
+                    const parent = e.currentTarget.parentElement;
+                    if (parent) {
+                      const errorMsg = document.createElement('div');
+                      errorMsg.className = 'bg-gray-700 p-8 rounded-lg text-center';
+                      errorMsg.innerHTML = '<p class="text-gray-400">图片加载失败</p><p class="text-sm text-gray-500 mt-2">请将参考卡图片保存到 src/assets/rules/reference-card.jpg</p>';
+                      parent.appendChild(errorMsg);
+                    }
+                  }}
+                />
+              </div>
+              <div className="mt-6 bg-gray-700 p-4 rounded-lg w-full">
+                <h4 className="font-bold mb-2">说明：</h4>
+                <ul className="list-disc pl-5 space-y-1 text-sm">
+                  <li>该角色在游戏开始时向左边玩家展示的是该对象族的标记。</li>
+                  <li>* 标记：该角色只能在进行干涉时使用技能。</li>
+                  <li>** 标记：该角色只能在被你干涉的玩家受到或治愈1点伤害时使用。</li>
+                </ul>
               </div>
             </div>
           )}

@@ -1,14 +1,17 @@
 import { useState } from 'react'
-import { useGame } from '../context/GameContext'
 
 interface PlayerSetupProps {
-  onStartGame: () => void
+  onStartGame: (playerCount: number) => void
+  isLoading?: boolean
 }
 
-const PlayerSetup = ({ onStartGame }: PlayerSetupProps) => {
-  const { setPlayerCount } = useGame()
+const PlayerSetup = ({ onStartGame, isLoading: externalLoading = false }: PlayerSetupProps) => {
   const [count, setCount] = useState<number>(8)
   const [error, setError] = useState<string>('')
+  const [internalLoading, setInternalLoading] = useState<boolean>(false)
+  
+  // 合并内部和外部的加载状态
+  const isLoading = externalLoading || internalLoading
 
   const handlePlayerCountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = parseInt(e.target.value)
@@ -21,14 +24,22 @@ const PlayerSetup = ({ onStartGame }: PlayerSetupProps) => {
     }
   }
 
-  const handleStartGame = () => {
+  const handleStartGame = async () => {
     if (count < 6 || count > 12) {
       setError('玩家数量必须在6到12人之间')
       return
     }
     
-    setPlayerCount(count)
-    onStartGame()
+    try {
+      setInternalLoading(true)
+      // 传递玩家数量给父组件
+      await onStartGame(count)
+    } catch (error) {
+      console.error('创建房间失败:', error)
+      setError('创建房间失败，请重试')
+    } finally {
+      setInternalLoading(false)
+    }
   }
 
   return (
@@ -69,10 +80,10 @@ const PlayerSetup = ({ onStartGame }: PlayerSetupProps) => {
       
       <button
         onClick={handleStartGame}
-        disabled={count < 6 || count > 12}
-        className={`w-full py-2 px-4 rounded-md ${count < 6 || count > 12 ? 'bg-gray-600 cursor-not-allowed' : 'bg-red-600 hover:bg-red-700'}`}
+        disabled={count < 6 || count > 12 || isLoading}
+        className={`w-full py-2 px-4 rounded-md ${count < 6 || count > 12 || isLoading ? 'bg-gray-600 cursor-not-allowed' : 'bg-red-600 hover:bg-red-700'}`}
       >
-        下一步：创建房间
+        {isLoading ? '创建中...' : '下一步：创建房间'}
       </button>
     </div>
   )

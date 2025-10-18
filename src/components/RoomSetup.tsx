@@ -1,133 +1,111 @@
-import { useState, useEffect } from 'react'
+import React, { useState } from 'react'
 import { useGame } from '../context/GameContext'
-import QRCode from 'react-qr-code'
+import { QRCodeDisplay } from './QRCodeDisplay'
 
 interface RoomSetupProps {
-  onRoomReady: () => void
+  onRoomReady: () => void;
+  playerCount?: number;
 }
 
-const RoomSetup = ({ onRoomReady }: RoomSetupProps) => {
-  const { players, roomId, createRoom, isHost } = useGame()
-  const [showQRCode, setShowQRCode] = useState(false)
-  const [baseUrl, setBaseUrl] = useState('')
-  
-  // 获取当前页面的基础URL
-  useEffect(() => {
-    const url = window.location.origin
-    setBaseUrl(url)
-  }, [])
+export const RoomSetup: React.FC<RoomSetupProps> = ({ onRoomReady, playerCount }) => {
+  const { state, startGame } = useGame()
+  const [isStarting, setIsStarting] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const baseUrl = window.location.origin
+  const count = playerCount || state.playerCount || 8
 
-  // 创建房间
-  const handleCreateRoom = () => {
-    createRoom()
-    setShowQRCode(true)
+  if (!state.roomId) {
+    // 房间未创建好时显示加载中
+    return (
+      <div className="max-w-md mx-auto p-6 bg-white rounded-lg shadow-lg text-center">
+        <h2 className="text-2xl font-bold mb-6 text-gray-800">正在创建房间...</h2>
+        <div className="text-gray-500">请稍候...</div>
+      </div>
+    )
   }
 
-  // 生成玩家访问链接
-  const generatePlayerLink = (playerId: number) => {
-    if (!roomId) return ''
-    return `${baseUrl}/access/${roomId}/${playerId}`
-  }
+  const handleStartGame = async () => {
+    try {
+      setIsStarting(true)
+      setError(null)
+      console.log('主持人点击开始游戏')
 
-  // 复制链接到剪贴板
-  const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text)
-      .then(() => alert('链接已复制到剪贴板'))
-      .catch(err => console.error('复制失败:', err))
-  }
-  
-  // 测试链接
-  const testLink = (playerId: number) => {
-    const link = generatePlayerLink(playerId)
-    if (link) {
-      window.open(link, '_blank')
+      // 调用startGame获取游戏状态
+      await startGame()
+
+      // 成功后切换到游戏面板
+      onRoomReady()
+    } catch (error) {
+      console.error('开始游戏失败:', error)
+      setError(error instanceof Error ? error.message : '开始游戏失败')
+    } finally {
+      setIsStarting(false)
     }
   }
 
   return (
-    <div className="bg-gray-800 p-6 rounded-lg shadow-lg w-full max-w-md mx-auto">
-      <h2 className="text-2xl font-bold mb-6 text-center">房间设置</h2>
-      
-      {!roomId ? (
-        <div className="flex flex-col items-center">
-          <p className="mb-4 text-center">
-            创建一个房间，让玩家通过手机访问查看自己的身份
+    <div className="max-w-2xl mx-auto p-6 bg-white rounded-lg shadow-lg">
+      <h2 className="text-2xl font-bold text-center mb-6 text-gray-800">
+        房间创建成功！
+      </h2>
+      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6 text-center">
+        <p className="text-sm text-blue-800 mb-2">房间号:</p>
+        <p className="text-2xl font-mono font-bold text-blue-900">{state.roomId}</p>
+      </div>
+      <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-6 text-center">
+        <p className="text-sm text-gray-600 mb-2">玩家数量:</p>
+        <p className="text-lg font-semibold text-gray-800">
+          <span className="text-green-600">{state.players.length}</span> / {count} 人
+        </p>
+        {state.players.length > 0 && (
+          <p className="text-xs text-gray-500 mt-2">
+            已加入: {state.players.join(', ')}
           </p>
-          <button
-            onClick={handleCreateRoom}
-            className="w-full py-2 px-4 bg-red-600 hover:bg-red-700 rounded-md"
-          >
-            创建房间
-          </button>
-        </div>
-      ) : (
-        <div>
-          <div className="mb-4">
-            <h3 className="text-xl font-bold mb-2">房间号: {roomId}</h3>
-            <p className="text-sm text-gray-400 mb-4">
-              请让玩家使用以下链接或扫描二维码加入游戏
-            </p>
-          </div>
-
-          {showQRCode && players.length > 0 && (
-            <div className="mb-6">
-              <div className="grid grid-cols-1 gap-4">
-                {players.map((player) => (
-                  <div key={player.id} className="bg-gray-700 p-4 rounded-lg">
-                    <div className="flex justify-between items-center mb-2">
-                      <h4 className="font-bold">玩家 {player.id}</h4>
-                      <div className="flex space-x-1">
-                        <button
-                          onClick={() => testLink(player.id)}
-                          className="text-xs px-2 py-1 bg-green-600 hover:bg-green-700 rounded"
-                          title="在新窗口中测试此链接"
-                        >
-                          测试
-                        </button>
-                        <button
-                          onClick={() => copyToClipboard(generatePlayerLink(player.id))}
-                          className="text-xs px-2 py-1 bg-blue-600 hover:bg-blue-700 rounded"
-                        >
-                          复制链接
-                        </button>
-                      </div>
-                    </div>
-                    <div className="text-sm mb-2">
-                      访问代码: <span className="font-mono">{player.accessCode}</span>
-                    </div>
-                    <div className="flex justify-center bg-white p-2 rounded">
-                      <QRCode
-                        value={generatePlayerLink(player.id)}
-                        size={128}
-                        level="L"
-                      />
-                    </div>
-                    <p className="text-xs text-center mt-2 text-gray-400">
-                      扫描二维码或使用链接访问
-                    </p>
-                  </div>
-                ))}
+        )}
+      </div>
+      <div className="mb-6">
+        <p className="text-sm text-gray-600 mb-3">每位玩家请使用下方专属二维码或链接加入：</p>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {Array.from({ length: count }, (_, i) => i + 1).map((playerId) => {
+            const url = `${baseUrl}/access/${state.roomId}/${playerId}`
+            const hasJoined = state.players.includes(playerId)
+            return (
+              <div key={playerId} className={`flex flex-col items-center p-4 rounded border ${
+                hasJoined ? 'bg-green-50 border-green-400' : 'bg-gray-50'
+              }`}>
+                <div className={`mb-2 font-medium ${
+                  hasJoined ? 'text-green-700' : 'text-gray-700'
+                }`}>
+                  玩家 {playerId} {hasJoined && '✓'}
+                </div>
+                <QRCodeDisplay url={url} title={undefined} description={undefined} />
               </div>
-            </div>
-          )}
-
-          <div className="mt-4">
-            <p className="text-sm text-gray-400 mb-2 text-center">
-              请确保所有玩家都能成功访问自己的身份页面
-            </p>
-            <div className="flex justify-between">
-              <button
-                onClick={onRoomReady}
-                className="w-full py-2 px-4 bg-green-600 hover:bg-green-700 rounded-md"
-              >
-                开始游戏
-              </button>
-            </div>
-          </div>
+            )
+          })}
+        </div>
+      </div>
+      <div className="mt-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg text-center">
+        <p className="text-sm text-yellow-800">
+          <strong>提示:</strong> 每位玩家请用自己的二维码或链接加入。玩家加入后即可查看自己的身份，无需等待所有玩家。
+        </p>
+      </div>
+      {error && (
+        <div className="mt-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
+          {error}
         </div>
       )}
+      <div className="mt-6 space-y-3">
+        <button
+          onClick={handleStartGame}
+          disabled={isStarting}
+          className="w-full bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 disabled:bg-gray-400 disabled:cursor-not-allowed"
+        >
+          {isStarting ? '正在开始...' : `进入游戏面板 ${state.players.length > 0 ? `(${state.players.length}/${count} 人已加入)` : ''}`}
+        </button>
+        <p className="text-xs text-gray-500 text-center">
+          点击上方按钮可查看所有玩家身份。玩家加入后会自动获得身份。
+        </p>
+      </div>
     </div>
   )
 }
-
-export default RoomSetup

@@ -1,139 +1,260 @@
-import { useState, useEffect } from 'react'
-import { useGame } from '../context/GameContext'
-import { Player } from '../types/gameTypes'
+import React, { useEffect, useState } from 'react';
+import { useGame } from '../context/GameContext';
+import { useParams, useNavigate } from 'react-router-dom';
 import PlayerView from './PlayerView'
-import { useParams, useNavigate } from 'react-router-dom'
 
-const PlayerAccess = () => {
-  const { roomId, playerId } = useParams()
-  const { players, joinRoom, currentPlayer } = useGame()
-  const [player, setPlayer] = useState<Player | null>(null)
-  const [error, setError] = useState<string>('')
-  const [joined, setJoined] = useState(false)
-  const [debugInfo, setDebugInfo] = useState<{[key: string]: any}>({})
-  const navigate = useNavigate()
+export const PlayerAccess: React.FC = () => {
+  const { roomId, playerId } = useParams<{ roomId: string; playerId: string }>();
+  const { state, joinRoom, checkServerHealth } = useGame();
+  const navigate = useNavigate();
+
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [debugInfo, setDebugInfo] = useState<any>(null);
+  const [hasJoined, setHasJoined] = useState(false);
 
   useEffect(() => {
-    // 收集调试信息
-    const storageKeys = ['bloodbond_game_state', 'bloodbond_player_access']
-    const storageData: {[key: string]: any} = {}
-    
-    storageKeys.forEach(key => {
-      try {
-        const data = localStorage.getItem(key)
-        storageData[key] = data ? JSON.parse(data) : null
-      } catch (e) {
-        storageData[key] = `解析错误: ${e}`
+    const initializePlayer = async () => {
+      if (!roomId || !playerId) {
+        setError('无效的房间号或玩家ID');
+        setIsLoading(false);
+        return;
       }
-    })
-    
-    setDebugInfo({
-      params: { roomId, playerId },
-      localStorage: storageData,
-      url: window.location.href,
-      playersCount: players?.length || 0
-    })
-    
-    // 尝试加入房间
-    if (roomId && playerId) {
-      const playerIdNum = parseInt(playerId)
-      if (!isNaN(playerIdNum)) {
-        try {
-          // 先检查玩家是否已经在当前状态中
-          const existingPlayer = players.find(p => p.id === playerIdNum)
-          
-          if (existingPlayer) {
-            console.log('在当前状态中找到玩家:', existingPlayer)
-            setPlayer(existingPlayer)
-            setJoined(true)
-            return
-          }
-          
-          // 尝试加入房间
-          const success = joinRoom(roomId, playerIdNum)
-          if (success) {
-            // 重新查找玩家，因为joinRoom可能已经更新了players数组
-            const foundPlayer = players.find(p => p.id === playerIdNum)
-            if (foundPlayer) {
-              setPlayer(foundPlayer)
-              setJoined(true)
-            } else {
-              console.error(`加入房间成功但找不到ID为${playerIdNum}的玩家，当前玩家数:`, players.length)
-              setError(`找不到ID为${playerIdNum}的玩家`)
-            }
-          } else {
-            console.error(`无法加入房间${roomId}，当前玩家数:`, players.length)
-            setError(`无法加入房间${roomId}，可能是房间不存在或已过期`)
-          }
-        } catch (e) {
-          console.error('加入房间时出错:', e)
-          setError(`加入房间时出错: ${e instanceof Error ? e.message : String(e)}`)
-        }
-      } else {
-        setError('玩家ID必须是数字')
-      }
-    } else {
-      setError('缺少必要的房间号或玩家ID参数')
-    }
-  }, [roomId, playerId, joinRoom, players])
 
-  // 返回主页
-  const goToHome = () => {
-    navigate('/')
+      const parsedPlayerId = parseInt(playerId);
+      if (isNaN(parsedPlayerId)) {
+        setError('玩家ID必须是数字');
+        setIsLoading(false);
+        return;
+      }
+
+      if (hasJoined) {
+        return; // 已经加入过了，不要重复加入
+      }
+
+      try {
+        console.log('=== PlayerAccess 初始化 ===');
+        console.log('房间ID:', roomId);
+        console.log('玩家ID:', parsedPlayerId);
+
+        // 检查服务器连接
+        const isServerHealthy = await checkServerHealth();
+        console.log('服务器健康检查:', isServerHealthy);
+        if (!isServerHealthy) {
+          setError('无法连接到游戏服务器，请确保服务器正在运行');
+          setIsLoading(false);
+          return;
+        }
+
+        // 加入房间
+        console.log('正在加入房间...');
+        await joinRoom(roomId, parsedPlayerId);
+        console.log('加入房间成功');
+        setHasJoined(true);
+        setIsLoading(false);
+      } catch (err) {
+        const errorMessage = err instanceof Error ? err.message : '加入房间失败';
+        console.error('加入房间失败:', err);
+        setError(errorMessage);
+        setIsLoading(false);
+
+        // 收集调试信息
+        setDebugInfo({
+          roomId,
+          playerId: parsedPlayerId,
+          serverHealth: await checkServerHealth().catch(() => false),
+          url: window.location.href,
+          userAgent: navigator.userAgent,
+          timestamp: new Date().toISOString()
+        });
+      }
+    };
+
+    initializePlayer();
+  }, [roomId, playerId, hasJoined]); // 移除 joinRoom 和 checkServerHealth 依赖
+
+  // 监听 state 变化，当 gameData 准备好时显示玩家身份
+  useEffect(() => {
+    console.log('=== useEffect 触发 ===');
+    console.log('state.gameData:', state.gameData);
+    console.log('state.gameData?.players:', state.gameData?.players);
+    console.log('state.playerId:', state.playerId);
+    console.log('hasJoined:', hasJoined);
+
+    if (state.gameData?.players && state.playerId && hasJoined) {
+      console.log('=== State 已更新，检查玩家身份 ===');
+      console.log('gameData.players:', state.gameData.players);
+      console.log('当前 playerId:', state.playerId);
+      console.log('玩家类型:', typeof state.playerId);
+
+      const playerObj = state.gameData.players.find((p: any) => {
+        console.log(`比较 p.id(${p.id}, ${typeof p.id}) === state.playerId(${state.playerId}, ${typeof state.playerId})`);
+        return p.id === state.playerId;
+      });
+
+      if (playerObj) {
+        console.log('✅ 找到玩家身份:', playerObj);
+        setIsLoading(false);
+      } else {
+        console.log('⚠️ 未找到玩家身份');
+      }
+    }
+  }, [state.gameData, state.playerId, hasJoined]);
+
+  const handleRetry = () => {
+    setIsLoading(true);
+    setError(null);
+    setDebugInfo(null);
+    window.location.reload();
+  };
+
+  const handleGoHome = () => {
+    navigate('/');
+  };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
+        <div className="max-w-md mx-auto p-6 bg-white rounded-lg shadow-lg text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <h2 className="text-xl font-semibold text-gray-800 mb-2">正在加入房间...</h2>
+          <p className="text-gray-600">请稍候，正在连接到游戏服务器</p>
+        </div>
+      </div>
+    );
   }
 
   if (error) {
     return (
-      <div className="bg-gray-800 p-6 rounded-lg shadow-lg w-full max-w-md mx-auto text-center">
-        <h2 className="text-2xl font-bold mb-4 text-red-500">错误</h2>
-        <p className="mb-4">{error}</p>
-        <p className="text-sm text-gray-400 mb-4">
-          请确认您使用的链接是正确的，或联系游戏主持人获取新的链接
-        </p>
-        <div className="text-xs text-gray-500 mt-4 border-t border-gray-700 pt-4">
-          <p>调试信息:</p>
-          <p>房间号: {roomId || '未提供'}</p>
-          <p>玩家ID: {playerId || '未提供'}</p>
-          <p>当前玩家数: {players?.length || 0}</p>
+      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
+        <div className="max-w-md mx-auto p-6 bg-white rounded-lg shadow-lg">
+          <div className="text-center mb-6">
+            <div className="text-red-500 text-6xl mb-4">⚠️</div>
+            <h2 className="text-xl font-semibold text-gray-800 mb-2">无法加入房间</h2>
+            <p className="text-gray-600 mb-4">{error}</p>
+          </div>
+
+          <div className="space-y-3">
+            <button
+              onClick={handleRetry}
+              className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+            >
+              重试
+            </button>
+            <button
+              onClick={handleGoHome}
+              className="w-full bg-gray-600 text-white py-2 px-4 rounded-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
+            >
+              返回主页
+            </button>
+          </div>
+
+          {debugInfo && (
+            <details className="mt-6">
+              <summary className="cursor-pointer text-sm text-gray-600 hover:text-gray-800">
+                调试信息
+              </summary>
+              <div className="mt-2 p-3 bg-gray-50 rounded text-xs text-gray-700">
+                <pre>{JSON.stringify(debugInfo, null, 2)}</pre>
+              </div>
+            </details>
+          )}
         </div>
-        <button 
-          onClick={goToHome}
-          className="mt-4 px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-md text-sm"
-        >
-          返回主页
-        </button>
       </div>
-    )
+    );
   }
 
-  if (!player) {
+  // 如果已加入且有游戏数据，检查是否能显示玩家身份
+  if (hasJoined && state.roomId && state.playerId && state.gameData?.players) {
+    const playerObj = state.gameData.players.find((p: any) => p.id === state.playerId);
+
+    if (playerObj) {
+      // 找到玩家身份，显示身份信息，并传递所有玩家数据
+      console.log('渲染玩家身份视图');
+      return (
+        <div className="min-h-screen bg-gray-100 flex items-center justify-center">
+          <PlayerView
+            player={playerObj}
+            allPlayers={state.gameData.players}
+            onBack={handleGoHome}
+            isPlayerAccess={true}
+          />
+        </div>
+      );
+    }
+  }
+
+  // 成功加入房间后的显示
+  if (hasJoined && state.roomId && state.playerId) {
+    // 添加调试日志
+    console.log('=== PlayerAccess 渲染状态 ===');
+    console.log('state.gamePhase:', state.gamePhase);
+    console.log('state.gameData:', state.gameData);
+    console.log('state.playerId:', state.playerId);
+
     return (
-      <div className="bg-gray-800 p-6 rounded-lg shadow-lg w-full max-w-md mx-auto text-center">
-        <h2 className="text-2xl font-bold mb-4">加载中...</h2>
-        <p className="text-sm text-gray-400">
-          正在连接到游戏房间，请稍候...
-        </p>
+      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
+        <div className="max-w-md mx-auto p-6 bg-white rounded-lg shadow-lg">
+          <div className="text-center mb-6">
+            <div className="text-green-500 text-6xl mb-4">✅</div>
+            <h2 className="text-xl font-semibold text-gray-800 mb-2">成功加入房间！</h2>
+            <p className="text-gray-600">房间号: {state.roomId}</p>
+            <p className="text-gray-600">玩家ID: {state.playerId}</p>
+            <p className="text-sm text-gray-500 mt-2">游戏阶段: {state.gamePhase}</p>
+          </div>
+
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+            <h3 className="font-semibold text-blue-800 mb-2">连接状态</h3>
+            <div className="flex items-center space-x-2">
+              <div className={`w-3 h-3 rounded-full ${state.isConnected ? 'bg-green-500' : 'bg-red-500'}`}></div>
+              <span className="text-sm text-blue-700">
+                {state.isConnected ? '已连接到服务器' : '连接中...'}
+              </span>
+            </div>
+          </div>
+
+          <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-6">
+            <h3 className="font-semibold text-gray-800 mb-2">房间信息</h3>
+            <p className="text-sm text-gray-600">当前玩家数: {state.players.length}</p>
+            <p className="text-sm text-gray-600">总玩家数: {state.playerCount}</p>
+            {state.players.length > 0 && (
+              <p className="text-sm text-gray-600">
+                已加入玩家: {state.players.join(', ')}
+              </p>
+            )}
+          </div>
+
+          {/* 调试信息 */}
+          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
+            <h3 className="font-semibold text-yellow-800 mb-2">调试信息</h3>
+            <p className="text-xs text-yellow-700">gameData 存在: {state.gameData ? '是' : '否'}</p>
+            {state.gameData && (
+              <>
+                <p className="text-xs text-yellow-700">
+                  gameData.players 数量: {state.gameData.players?.length || 0}
+                </p>
+                <p className="text-xs text-yellow-700">
+                  当前玩家身份: {state.gameData.players?.find((p: any) => p.id === state.playerId) ? '已找到' : '未找到'}
+                </p>
+              </>
+            )}
+          </div>
+
+          <div className="text-center">
+            <p className="text-sm text-gray-600 mb-4">
+              等待游戏主持人开始游戏...
+            </p>
+            <button
+              onClick={handleGoHome}
+              className="bg-gray-600 text-white py-2 px-4 rounded-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
+            >
+              返回主页
+            </button>
+          </div>
+        </div>
       </div>
-    )
+    );
   }
 
-  return (
-    <div className="w-full max-w-md mx-auto">
-      <div className="bg-gray-800 p-4 rounded-lg shadow-lg mb-4">
-        <h2 className="text-xl font-bold mb-2 text-center">玩家 {player.id} 的身份</h2>
-        <p className="text-sm text-gray-400 text-center mb-4">
-          这是您的秘密身份，请不要让其他玩家看到
-        </p>
-      </div>
-      
-      <PlayerView player={player} onBack={() => {}} hideBackButton={true} />
-      
-      <div className="mt-4 text-center text-sm text-gray-400">
-        <p>房间号: {roomId}</p>
-        <p className="mt-2">游戏进行中请保持此页面打开</p>
-      </div>
-    </div>
-  )
-}
-
-export default PlayerAccess
+  return null;
+};

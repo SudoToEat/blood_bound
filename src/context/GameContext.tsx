@@ -1,20 +1,111 @@
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react'
+import React, { createContext, useContext, useReducer, useEffect, ReactNode } from 'react'
 import { generatePlayers, generateRoomId, generateAccessCode } from '../utils/gameUtils'
 import { Player, Faction, GameRoom } from '../types/gameTypes'
+import { ApiService } from '../utils/apiService'
+import { socketService } from '../utils/socketService'
 
-interface GameContextType {
-  players: Player[]
-  currentPlayerIndex: number
+// 游戏状态类型
+export interface GameState {
   roomId: string | null
-  isHost: boolean
-  currentPlayerId: number | null
-  setPlayers: (players: Player[]) => void
-  setPlayerCount: (count: number) => void
-  setCurrentPlayerIndex: (index: number) => void
-  createRoom: () => string
-  joinRoom: (roomId: string, playerId: number) => boolean
-  getPlayerByAccessCode: (accessCode: string) => Player | undefined
+  playerId: number | null
+  playerCount: number
+  players: number[]
+  gamePhase: 'setup' | 'playing' | 'ended'
+  currentTurn: number | null
+  gameData: any
+  isConnected: boolean
+  error: string | null
+}
+
+// 游戏动作类型
+type GameAction =
+  | { type: 'SET_ROOM'; payload: { roomId: string; playerCount: number } }
+  | { type: 'SET_PLAYER'; payload: { playerId: number } }
+  | { type: 'UPDATE_PLAYERS'; payload: number[] }
+  | { type: 'SET_GAME_PHASE'; payload: 'setup' | 'playing' | 'ended' }
+  | { type: 'SET_CURRENT_TURN'; payload: number }
+  | { type: 'UPDATE_GAME_DATA'; payload: any }
+  | { type: 'SET_CONNECTION_STATUS'; payload: boolean }
+  | { type: 'SET_ERROR'; payload: string | null }
+  | { type: 'RESET_GAME' }
+
+// 初始状态
+const initialState: GameState = {
+  roomId: null,
+  playerId: null,
+  playerCount: 10,
+  players: [],
+  gamePhase: 'setup',
+  currentTurn: null,
+  gameData: null,
+  isConnected: false,
+  error: null,
+}
+
+// 游戏状态reducer
+function gameReducer(state: GameState, action: GameAction): GameState {
+  switch (action.type) {
+    case 'SET_ROOM':
+      return {
+        ...state,
+        roomId: action.payload.roomId,
+        playerCount: action.payload.playerCount,
+        error: null,
+      }
+    case 'SET_PLAYER':
+      return {
+        ...state,
+        playerId: action.payload.playerId,
+        error: null,
+      }
+    case 'UPDATE_PLAYERS':
+      return {
+        ...state,
+        players: action.payload,
+      }
+    case 'SET_GAME_PHASE':
+      return {
+        ...state,
+        gamePhase: action.payload,
+      }
+    case 'SET_CURRENT_TURN':
+      return {
+        ...state,
+        currentTurn: action.payload,
+      }
+    case 'UPDATE_GAME_DATA':
+      return {
+        ...state,
+        gameData: action.payload,
+      }
+    case 'SET_CONNECTION_STATUS':
+      return {
+        ...state,
+        isConnected: action.payload,
+      }
+    case 'SET_ERROR':
+      return {
+        ...state,
+        error: action.payload,
+      }
+    case 'RESET_GAME':
+      return initialState
+    default:
+      return state
+  }
+}
+
+// 游戏上下文
+interface GameContextType {
+  state: GameState
+  createRoom: (playerCount: number) => Promise<string>
+  joinRoom: (roomId: string, playerId: number) => Promise<void>
+  startGame: () => Promise<void>
+  restartGame: () => Promise<void>
+  updateGameState: (gameData: any) => void
+  sendPlayerAction: (action: string, data?: any) => void
   resetGame: () => void
+  checkServerHealth: () => Promise<boolean>
 }
 
 const GameContext = createContext<GameContextType | undefined>(undefined)
@@ -23,200 +114,324 @@ const GameContext = createContext<GameContextType | undefined>(undefined)
 const STORAGE_KEY = 'bloodbond_game_state'
 const PLAYER_ACCESS_KEY = 'bloodbond_player_access'
 
-export const GameProvider = ({ children }: { children: ReactNode }) => {
-  const [players, setPlayers] = useState<Player[]>([])
-  const [currentPlayerIndex, setCurrentPlayerIndex] = useState<number>(0)
-  const [roomId, setRoomId] = useState<string | null>(null)
-  const [isHost, setIsHost] = useState<boolean>(false)
-  const [currentPlayerId, setCurrentPlayerId] = useState<number | null>(null)
-
-  // 初始化时从本地存储加载状态
-  useEffect(() => {
-    const savedState = localStorage.getItem(STORAGE_KEY)
-    if (savedState) {
-      try {
-        const { players, roomId, isHost } = JSON.parse(savedState)
-        if (players && Array.isArray(players)) setPlayers(players)
-        if (roomId) setRoomId(roomId)
-        if (typeof isHost === 'boolean') setIsHost(isHost)
-      } catch (e) {
-        console.error('Failed to parse saved game state', e)
+// 从 localStorage 恢复初始状态
+function getInitialState(): GameState {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY)
+    if (saved) {
+      const parsed = JSON.parse(saved)
+      // 只恢复房间号和玩家数量，其他状态重新初始化
+      return {
+        ...initialState,
+        roomId: parsed.roomId || null,
+        playerCount: parsed.playerCount || 10,
       }
     }
-    
-    // 检查是否有访问代码
-    const accessCode = localStorage.getItem(PLAYER_ACCESS_KEY)
-    if (accessCode && players.length > 0) {
-      const player = players.find(p => p.accessCode === accessCode)
-      if (player) {
-        setCurrentPlayerId(player.id)
+  } catch (error) {
+    console.error('恢复游戏状态失败:', error)
+  }
+  return initialState
+}
+
+// 游戏提供者组件
+export function GameProvider({ children }: { children: ReactNode }) {
+  const [state, dispatch] = useReducer(gameReducer, getInitialState())
+
+  // 检查服务器健康状态
+  const checkServerHealth = async (): Promise<boolean> => {
+    try {
+      const health = await ApiService.healthCheck()
+      dispatch({ type: 'SET_CONNECTION_STATUS', payload: health.status === 'ok' })
+      return health.status === 'ok'
+    } catch (error) {
+      dispatch({ type: 'SET_CONNECTION_STATUS', payload: false })
+      return false
+    }
+  }
+
+  // 创建房间
+  const createRoom = async (playerCount: number): Promise<string> => {
+    try {
+      const response = await ApiService.createRoom(playerCount)
+      const roomId = response.roomId
+      dispatch({ type: 'SET_ROOM', payload: { roomId, playerCount } })
+
+      // 保存房间信息到 localStorage
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({ roomId, playerCount }))
+
+      // 主持人也连接到WebSocket以接收玩家加入通知
+      // 使用特殊的playerId (0) 表示主持人
+      console.log('主持人连接WebSocket，房间号:', roomId)
+      const socket = socketService.connect(roomId, 0)
+
+      // 监听玩家加入事件
+      socketService.onPlayerJoined((data) => {
+        console.log('有玩家加入房间:', data)
+        dispatch({ type: 'UPDATE_PLAYERS', payload: data.players })
+      })
+
+      // 监听房间状态更新
+      socketService.onRoomState((roomState) => {
+        console.log('房间状态更新:', roomState)
+        dispatch({ type: 'UPDATE_PLAYERS', payload: roomState.players })
+      })
+
+      // 监听游戏状态更新（包括玩家展示线索等）
+      socketService.onGameStateUpdated((gameState) => {
+        console.log('主持人收到游戏状态更新:', gameState)
+        dispatch({ type: 'UPDATE_GAME_DATA', payload: gameState })
+      })
+
+      return roomId
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : '创建房间失败'
+      dispatch({ type: 'SET_ERROR', payload: errorMessage })
+      throw error
+    }
+  }
+
+  // 加入房间
+  const joinRoom = async (roomId: string, playerId: number): Promise<void> => {
+    try {
+      console.log(`尝试加入房间: ${roomId}, 玩家ID: ${playerId}`);
+      // 先获取房间信息
+      const roomInfo = await ApiService.getRoomInfo(roomId)
+      console.log('获取房间信息成功:', roomInfo);
+
+      dispatch({ type: 'SET_ROOM', payload: { roomId, playerCount: roomInfo.playerCount } })
+      dispatch({ type: 'SET_PLAYER', payload: { playerId } })
+
+      // 如果房间信息中已经有 gameState，立即设置
+      if (roomInfo.gameState && roomInfo.gameState.players) {
+        console.log('房间已有游戏数据，立即设置');
+        dispatch({ type: 'UPDATE_GAME_DATA', payload: roomInfo.gameState })
+        dispatch({ type: 'SET_GAME_PHASE', payload: 'playing' })
       }
+
+      // 连接WebSocket（在注册监听器之前先连接）
+      const socket = socketService.connect(roomId, playerId)
+      console.log('WebSocket连接初始化完成');
+
+      // 监听socket事件
+      socketService.onRoomState((roomState) => {
+        console.log('=== 收到 roomState 事件 ===');
+        console.log('完整 roomState 数据:', JSON.stringify(roomState, null, 2));
+        console.log('roomState.players:', roomState.players);
+        console.log('roomState.gameState:', roomState.gameState);
+
+        dispatch({ type: 'UPDATE_PLAYERS', payload: roomState.players })
+
+        if (roomState.gameState) {
+          console.log('游戏状态存在，phase:', roomState.gameState.phase);
+          console.log('游戏玩家数据:', roomState.gameState.players);
+          dispatch({ type: 'UPDATE_GAME_DATA', payload: roomState.gameState })
+
+          // 如果游戏已开始，设置游戏阶段为playing
+          if (roomState.gameState.phase === 'playing') {
+            console.log('✅ 设置游戏阶段为 playing');
+            dispatch({ type: 'SET_GAME_PHASE', payload: 'playing' })
+          } else {
+            console.log('⚠️ 游戏阶段不是 playing，是:', roomState.gameState.phase);
+          }
+        } else {
+          console.log('⚠️ roomState.gameState 不存在');
+        }
+      })
+
+      socketService.onPlayerJoined((data) => {
+        console.log('玩家加入:', data);
+        dispatch({ type: 'UPDATE_PLAYERS', payload: data.players })
+      })
+
+      socketService.onPlayerLeft((data) => {
+        console.log('玩家离开:', data);
+        dispatch({ type: 'UPDATE_PLAYERS', payload: data.players })
+      })
+
+      socketService.onGameStateUpdated((gameState) => {
+        console.log('游戏状态更新:', gameState);
+        dispatch({ type: 'UPDATE_GAME_DATA', payload: gameState })
+        // 如果游戏已开始，设置游戏阶段为playing
+        if (gameState.phase === 'playing') {
+          dispatch({ type: 'SET_GAME_PHASE', payload: 'playing' })
+        }
+      })
+
+      socketService.onPlayerAction((data) => {
+        // 处理其他玩家的操作
+        console.log('收到玩家操作:', data)
+      })
+
+      // 设置连接状态
+      dispatch({ type: 'SET_CONNECTION_STATUS', payload: true })
+
+    } catch (error) {
+      console.error('加入房间失败:', error);
+      const errorMessage = error instanceof Error ? error.message : '加入房间失败'
+      dispatch({ type: 'SET_ERROR', payload: errorMessage })
+      dispatch({ type: 'SET_CONNECTION_STATUS', payload: false })
+      throw error
+    }
+  }
+
+  // 开始游戏（主持人调用）
+  const startGame = async (): Promise<void> => {
+    try {
+      if (!state.roomId) {
+        throw new Error('房间ID不存在，无法开始游戏');
+      }
+
+      console.log('主持人开始游戏，房间号:', state.roomId);
+      const gameData = await ApiService.startGame(state.roomId);
+      console.log('获得游戏状态:', gameData);
+
+      // 更新本地状态
+      if (gameData.gameState) {
+        dispatch({ type: 'UPDATE_GAME_DATA', payload: gameData.gameState });
+        dispatch({ type: 'SET_GAME_PHASE', payload: 'playing' });
+      }
+    } catch (error) {
+      console.error('开始游戏失败:', error);
+      const errorMessage = error instanceof Error ? error.message : '开始游戏失败';
+      dispatch({ type: 'SET_ERROR', payload: errorMessage });
+      throw error;
+    }
+  }
+
+  // 重新开始游戏（主持人调用）
+  const restartGame = async (): Promise<void> => {
+    try {
+      if (!state.roomId) {
+        throw new Error('房间ID不存在，无法重新开始游戏');
+      }
+
+      console.log('主持人重新开始游戏，房间号:', state.roomId);
+      const gameData = await ApiService.restartGame(state.roomId);
+      console.log('获得新游戏状态:', gameData);
+
+      // 更新本地状态
+      if (gameData.gameState) {
+        dispatch({ type: 'UPDATE_GAME_DATA', payload: gameData.gameState });
+        dispatch({ type: 'SET_GAME_PHASE', payload: 'playing' });
+      }
+    } catch (error) {
+      console.error('重新开始游戏失败:', error);
+      const errorMessage = error instanceof Error ? error.message : '重新开始游戏失败';
+      dispatch({ type: 'SET_ERROR', payload: errorMessage });
+      throw error;
+    }
+  }
+
+  // 更新游戏状态
+  const updateGameState = (gameData: any) => {
+    dispatch({ type: 'UPDATE_GAME_DATA', payload: gameData })
+    
+    // 通过WebSocket同步到其他客户端
+    if (state.roomId) {
+      socketService.updateGameState(state.roomId, gameData)
+    }
+  }
+
+  // 发送玩家操作
+  const sendPlayerAction = (action: string, data?: any) => {
+    if (state.roomId && state.playerId) {
+      socketService.sendPlayerAction(state.roomId, state.playerId, action, data)
+    }
+  }
+
+  // 重置游戏
+  const resetGame = () => {
+    socketService.disconnect()
+    localStorage.removeItem(STORAGE_KEY) // 清除保存的房间信息
+    dispatch({ type: 'RESET_GAME' })
+  }
+
+  // 页面加载时恢复房间连接
+  useEffect(() => {
+    const reconnectToRoom = async () => {
+      if (state.roomId && !state.isConnected) {
+        try {
+          console.log('检测到已保存的房间号，尝试重新连接:', state.roomId)
+
+          // 先调用 startGame 获取完整的游戏状态
+          const gameData = await ApiService.startGame(state.roomId)
+          console.log('获取到游戏状态:', gameData)
+
+          // 更新游戏数据
+          if (gameData.gameState && gameData.gameState.players) {
+            dispatch({ type: 'UPDATE_GAME_DATA', payload: gameData.gameState })
+            dispatch({ type: 'SET_GAME_PHASE', payload: 'playing' })
+          }
+
+          // 重新连接 WebSocket（主持人使用 playerId 0）
+          socketService.connect(state.roomId, 0)
+
+          // 重新注册监听器
+          socketService.onPlayerJoined((data) => {
+            console.log('有玩家加入房间:', data)
+            dispatch({ type: 'UPDATE_PLAYERS', payload: data.players })
+          })
+
+          socketService.onRoomState((roomState) => {
+            console.log('房间状态更新:', roomState)
+            dispatch({ type: 'UPDATE_PLAYERS', payload: roomState.players })
+          })
+
+          socketService.onGameStateUpdated((gameState) => {
+            console.log('主持人收到游戏状态更新:', gameState)
+            dispatch({ type: 'UPDATE_GAME_DATA', payload: gameState })
+          })
+
+          dispatch({ type: 'SET_CONNECTION_STATUS', payload: true })
+          console.log('✅ 房间重新连接成功')
+        } catch (error) {
+          console.error('重新连接房间失败:', error)
+          // 房间不存在或连接失败，清除保存的状态
+          localStorage.removeItem(STORAGE_KEY)
+          dispatch({ type: 'RESET_GAME' })
+        }
+      }
+    }
+
+    reconnectToRoom()
+  }, []) // 只在组件挂载时执行一次
+
+  // 组件卸载时清理WebSocket连接
+  useEffect(() => {
+    return () => {
+      socketService.disconnect()
     }
   }, [])
 
-  // 当状态变化时保存到本地存储
+  // 定期检查服务器健康状态
   useEffect(() => {
-    if (roomId || players.length > 0) {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify({
-        players,
-        roomId,
-        isHost
-      }))
-    }
-  }, [players, roomId, isHost])
-
-  const setPlayerCount = (count: number) => {
-    const newPlayers = generatePlayers(count)
-    
-    // 为每个玩家生成访问代码
-    const playersWithAccessCodes = newPlayers.map(player => ({
-      ...player,
-      accessCode: generateAccessCode()
-    }))
-    
-    setPlayers(playersWithAccessCodes)
-    setCurrentPlayerIndex(0)
-    setIsHost(true)
-  }
-
-  const createRoom = () => {
-    const newRoomId = generateRoomId()
-    setRoomId(newRoomId)
-    setIsHost(true)
-    return newRoomId
-  }
-
-  const joinRoom = (roomId: string, playerId: number) => {
-    console.log(`尝试加入房间: ${roomId}, 玩家ID: ${playerId}`)
-    
-    // 首先检查当前状态中是否已有匹配的玩家
-    if (players.length > 0) { // 修复了逻辑错误，只需检查当前是否有玩家
-      console.log('检查当前状态中的玩家, 当前玩家数:', players.length)
-      const currentPlayer = players.find(p => p.id === playerId)
-      
-      if (currentPlayer) {
-        console.log('在当前状态中找到玩家:', currentPlayer)
-        setCurrentPlayerId(playerId)
-        setIsHost(false)
-        
-        // 保存访问代码到本地存储
-        if (currentPlayer.accessCode) {
-          localStorage.setItem(PLAYER_ACCESS_KEY, currentPlayer.accessCode)
-        }
-        
-        return true
-      }
+    const checkHealth = async () => {
+      await checkServerHealth()
     }
     
-    // 检查本地存储中是否有该房间的数据
-    const savedState = localStorage.getItem(STORAGE_KEY)
-    let foundPlayer = null
+    checkHealth()
+    const interval = setInterval(checkHealth, 30000) // 每30秒检查一次
     
-    // 尝试从本地存储加载
-    if (savedState) {
-      try {
-        const parsedState = JSON.parse(savedState)
-        console.log('从本地存储加载的状态:', parsedState)
-        
-        if (parsedState.roomId === roomId && Array.isArray(parsedState.players)) {
-          // 如果找到了匹配的房间，更新状态
-          const savedPlayers = parsedState.players
-          
-          // 查找对应ID的玩家
-          foundPlayer = savedPlayers.find((p: Player) => p.id === playerId)
-          
-          if (foundPlayer) {
-            console.log('在本地存储中找到玩家:', foundPlayer)
-            // 更新状态
-            setPlayers(savedPlayers)
-            setRoomId(roomId)
-            setCurrentPlayerId(playerId)
-            setIsHost(false)
-            
-            // 保存访问代码到本地存储
-            if (foundPlayer.accessCode) {
-              localStorage.setItem(PLAYER_ACCESS_KEY, foundPlayer.accessCode)
-            }
-            
-            return true
-          } else {
-            console.log('本地存储中未找到玩家ID:', playerId, '可用玩家IDs:', savedPlayers.map(p => p.id))
-          }
-        } else {
-          console.log('本地存储中的房间ID不匹配或没有玩家数组')
-        }
-      } catch (e) {
-        console.error('解析本地存储数据失败:', e)
-      }
-    } else {
-      console.log('本地存储中没有游戏状态')
-    }
-    
-    // 如果本地存储中没有找到，再次检查当前状态
-    if (players.length > 0) {
-      console.log('再次尝试在当前状态中查找玩家, 当前玩家数:', players.length, '可用玩家IDs:', players.map(p => p.id))
-      foundPlayer = players.find(p => p.id === playerId)
-      
-      if (foundPlayer) {
-        console.log('在当前状态中找到玩家:', foundPlayer)
-        setRoomId(roomId)
-        setCurrentPlayerId(playerId)
-        setIsHost(false)
-        
-        // 保存访问代码到本地存储
-        if (foundPlayer.accessCode) {
-          localStorage.setItem(PLAYER_ACCESS_KEY, foundPlayer.accessCode)
-        }
-        
-        return true
-      } else {
-        console.log('当前状态中未找到玩家ID:', playerId)
-      }
-    } else {
-      console.log('当前状态中没有玩家数据')
-    }
-    
-    console.log('无法加入房间，未找到匹配的玩家')
-    return false
+    return () => clearInterval(interval)
+  }, [])
+
+  const value: GameContextType = {
+    state,
+    createRoom,
+    joinRoom,
+    startGame,
+    restartGame,
+    updateGameState,
+    sendPlayerAction,
+    resetGame,
+    checkServerHealth,
   }
 
-  const getPlayerByAccessCode = (accessCode: string) => {
-    return players.find(p => p.accessCode === accessCode)
-  }
-
-  const resetGame = () => {
-    setPlayers([])
-    setCurrentPlayerIndex(0)
-    setRoomId(null)
-    setIsHost(false)
-    setCurrentPlayerId(null)
-    localStorage.removeItem(STORAGE_KEY)
-    localStorage.removeItem(PLAYER_ACCESS_KEY)
-  }
-
-  return (
-    <GameContext.Provider
-      value={{
-        players,
-        currentPlayerIndex,
-        roomId,
-        isHost,
-        currentPlayerId,
-        setPlayers,
-        setPlayerCount,
-        setCurrentPlayerIndex,
-        createRoom,
-        joinRoom,
-        getPlayerByAccessCode,
-        resetGame
-      }}
-    >
-      {children}
-    </GameContext.Provider>
-  )
+  return <GameContext.Provider value={value}>{children}</GameContext.Provider>
 }
 
-export const useGame = () => {
+// 使用游戏上下文的Hook
+export function useGame() {
   const context = useContext(GameContext)
   if (context === undefined) {
     throw new Error('useGame must be used within a GameProvider')

@@ -1,0 +1,134 @@
+# 血契猎杀角色图片功能总结
+
+## 🎯 功能概述
+
+我已经为您的血契猎杀游戏添加了完整的角色图片系统，包括：
+
+### ✅ 已完成的功能
+
+1. **角色图片映射系统** (`src/assets/characters/index.ts`)
+   - 为所有10个角色定义了图片路径映射
+   - 支持角色图片和背景图片
+   - 自动错误处理和默认图片回退
+
+2. **角色卡片组件** (`src/components/CharacterCard.tsx`)
+   - 显示角色图片、名称和能力描述
+   - 支持揭示/隐藏状态切换
+   - 阵营标识和等级显示
+   - 响应式设计
+
+3. **角色选择器组件** (`src/components/CharacterSelector.tsx`)
+   - 可视化角色选择界面
+   - 支持多选和取消选择
+   - 角色详情查看功能
+   - 选择数量限制
+
+4. **角色图鉴组件** (`src/components/CharacterGallery.tsx`)
+   - 完整的角色信息展示
+   - 按阵营筛选功能
+   - 详细角色能力说明
+   - 美观的卡片布局
+
+5. **角色演示页面** (`src/components/CharacterDemo.tsx`)
+   - 展示所有角色图片功能
+   - 标签页切换界面
+   - 功能说明和统计
+
+6. **默认图片** (`src/assets/characters/default.svg`)
+   - SVG格式的默认角色图片
+   - 图片加载失败时自动显示
+
+7. **辅助工具**
+   - 角色图片检查脚本 (`scripts/add-character-images.sh`)
+   - 详细的README说明文档 (`src/assets/characters/README.md`)
+
+## 🎮 角色信息
+
+### 鳳凰氏族（红色阵营）
+1. **长老 (Elder)** - 等级1 - 可以使用鵝毛筆能力
+2. **刺客 (Assassin)** - 等级2 - 让任意一位玩家受两点傷害
+3. **弄臣 (Jester)** - 等级3 - 选择两位玩家查看角色陣營身份
+4. **煉金術士 (Alchemist)** - 等级4 - 干涉一名玩家，治癒或傷害
+5. **靈喻師 (Mentalist)** - 等级5 - 强制任何一位玩家受到一点傷害
+
+### 石像鬼氏族（蓝色阵营）
+6. **衛士 (Guardian)** - 等级6 - 将盾牌卡给予任意玩家
+7. **狂戰士 (Berserker)** - 等级7 - 强制让刚才攻击他的玩家受一点傷害
+8. **法師 (Mage)** - 等级8 - 将法杖卡给自己和任意一位玩家
+9. **舞妓 (Geisha)** - 等级9 - 将折扇卡给任意一位玩家
+
+### 中立角色
+10. **調查官 (Inquisitor)** - 等级10 - 中立角色，调查官不可以攻击已经受傷三点的玩家
+
+## 📁 文件结构
+
+```
+src/
+├── assets/
+│   └── characters/
+│       ├── index.ts              # 角色图片映射配置
+│       ├── default.svg           # 默认角色图片
+│       └── README.md            # 详细说明文档
+├── components/
+│   ├── CharacterCard.tsx        # 角色卡片组件
+│   ├── CharacterSelector.tsx    # 角色选择器组件
+│   ├── CharacterGallery.tsx     # 角色图鉴组件
+│   ├── CharacterDemo.tsx        # 角色演示页面
+│   └── PlayerCard.tsx           # 更新的玩家卡片组件
+└── App.tsx                      # 更新的主应用文件
+
+scripts/
+└── add-character-images.sh      # 角色图片检查脚本
+```
+
+## 🚀 使用方法
+
+### 查看角色演示
+访问 `http://localhost:5173/?demo=true` 查看角色图片演示页面
+
+### 添加角色图片
+1. 运行检查脚本：
+   ```bash
+   ./scripts/add-character-images.sh
+   ```
+
+2. 将角色图片文件添加到 `src/assets/characters/` 目录：
+   - 角色图片：`elder.png`, `assassin.png`, `jester.png` 等
+   - 背景图片：`elder-bg.png`, `assassin-bg.png`, `jester-bg.png` 等
+
+3. 支持的图片格式：PNG、JPG、SVG
+4. 建议图片尺寸：200x200 像素或更大
+
+## 🔗 相关链接
+
+- [血契猎杀官方介绍](https://andyventure.com/boardgame-blood-bound/)
+- [游戏规则说明](https://andyventure.com/boardgame-blood-bound/)
+
+## 📝 下一步
+
+1. **添加实际角色图片**：根据脚本提示，添加所有角色的图片文件
+2. **测试功能**：访问演示页面测试所有功能
+3. **集成到游戏**：在游戏流程中使用角色图片功能
+4. **优化体验**：根据用户反馈调整界面和功能
+
+## 🎨 设计特点
+
+- **响应式设计**：适配桌面和移动设备
+- **错误处理**：图片加载失败时显示默认图片
+- **用户体验**：直观的界面和流畅的交互
+- **可扩展性**：易于添加新角色和修改现有角色
+- **性能优化**：懒加载和错误处理机制
+
+## 💡 技术亮点
+
+- TypeScript 类型安全
+- React 组件化设计
+- Tailwind CSS 样式系统
+- SVG 默认图片（矢量图形，清晰度高）
+- 模块化的图片管理系统
+
+---
+
+**开发完成时间**：2024年12月
+**开发者**：AI助手
+**项目**：血契猎杀本地网页版 

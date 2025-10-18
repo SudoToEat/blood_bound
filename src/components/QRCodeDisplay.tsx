@@ -1,20 +1,39 @@
 import React from 'react'
-import QRCode from 'react-qr-code'
+import QRCode from 'qrcode'
 
 interface QRCodeDisplayProps {
   url: string
   title?: string
   description?: string
-  showCopyButton?: boolean
 }
 
-const QRCodeDisplay: React.FC<QRCodeDisplayProps> = ({
+export const QRCodeDisplay: React.FC<QRCodeDisplayProps> = ({
   url,
-  title = '扫描二维码',
-  description = '使用手机相机扫描此二维码访问',
-  showCopyButton = true
+  title = '玩家访问二维码',
+  description = '让玩家扫描二维码访问游戏'
 }) => {
+  const [qrCodeUrl, setQrCodeUrl] = React.useState<string>('')
   const [copied, setCopied] = React.useState(false)
+
+  // 生成二维码
+  React.useEffect(() => {
+    const generateQRCode = async () => {
+      try {
+        const qrCodeDataUrl = await QRCode.toDataURL(url, {
+          width: 200,
+          margin: 2,
+          color: {
+            dark: '#000000',
+            light: '#FFFFFF'
+          }
+        })
+        setQrCodeUrl(qrCodeDataUrl)
+      } catch (error) {
+        console.error('生成二维码失败:', error)
+      }
+    }
+    generateQRCode()
+  }, [url])
 
   const copyToClipboard = async () => {
     try {
@@ -26,30 +45,38 @@ const QRCodeDisplay: React.FC<QRCodeDisplayProps> = ({
     }
   }
 
+  const openPlayerLink = () => {
+    window.open(url, '_blank')
+  }
+
   return (
-    <div className="flex flex-col items-center p-4 bg-gray-800 rounded-lg shadow-lg">
-      {title && <h3 className="text-lg font-bold mb-2">{title}</h3>}
-      
-      <div className="bg-white p-3 rounded-lg mb-3">
-        <QRCode value={url} size={150} />
+    <div className="flex flex-col items-center space-y-2">
+      <div className="text-center">
+        <h3 className="text-base font-semibold text-gray-800 mb-1">{title}</h3>
+        {description && <p className="text-xs text-gray-600">{description}</p>}
       </div>
-      
-      {description && <p className="text-sm text-gray-400 mb-2">{description}</p>}
-      
-      <div className="w-full text-xs text-gray-400 bg-gray-700 p-2 rounded mb-2 overflow-auto">
-        <code className="break-all">{url}</code>
+      <div className="bg-white p-2 rounded-lg border flex flex-col items-center">
+        {qrCodeUrl && (
+          <img src={qrCodeUrl} alt="QR Code" className="w-28 h-28" />
+        )}
       </div>
-      
-      {showCopyButton && (
+      <div className="flex items-center space-x-2 mt-1">
+        <span className="text-xs text-gray-700 break-all">{url}</span>
+        <button
+          onClick={openPlayerLink}
+          className="px-2 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700"
+          title="在新窗口打开"
+        >
+          打开
+        </button>
         <button
           onClick={copyToClipboard}
-          className={`px-4 py-2 rounded-md text-sm transition-colors ${copied ? 'bg-green-600' : 'bg-blue-600 hover:bg-blue-700'}`}
+          className={`px-2 py-1 text-xs rounded ${copied ? 'bg-green-600 text-white' : 'bg-gray-600 text-white hover:bg-gray-700'}`}
+          title="复制链接"
         >
-          {copied ? '已复制!' : '复制链接'}
+          {copied ? '已复制' : '复制'}
         </button>
-      )}
+      </div>
     </div>
   )
 }
-
-export default QRCodeDisplay
