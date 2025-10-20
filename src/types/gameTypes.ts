@@ -44,6 +44,7 @@ export interface Player {
   reveals?: ('red' | 'blue' | 'unknown')[] // 玩家展示的线索：红色(凤凰)、蓝色(石像鬼)、问号(未知)
   isOnline?: boolean // 玩家在线状态
   lastSeen?: number | null // 最后在线时间（时间戳）
+  curseUsed?: 'phoenix' | 'gargoyle' | null // 调查官诅咒卡使用状态：给红队(phoenix)、给蓝队(gargoyle)、未使用(null)
 }
 
 // 角色能力描述

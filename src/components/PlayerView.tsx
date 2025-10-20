@@ -44,6 +44,20 @@ const PlayerView = ({ player, allPlayers, onBack, hideBackButton = false, isPlay
     sendPlayerAction('addReveal', { revealType });
   };
 
+  // 处理诅咒卡使用
+  const handleUseCurse = (targetFaction: 'phoenix' | 'gargoyle') => {
+    if (player.curseUsed) {
+      alert('诅咒卡已经使用过了');
+      return;
+    }
+
+    const factionName = targetFaction === 'phoenix' ? '红队(凤凰氏族)' : '蓝队(石像鬼氏族)';
+    if (confirm(`确定要把真诅咒给${factionName}吗？此操作整局游戏只能执行一次！`)) {
+      console.log(`调查官 ${player.id} 使用诅咒卡，目标: ${targetFaction}`);
+      sendPlayerAction('useCurse', { targetFaction });
+    }
+  };
+
   // 处理姓名保存
   const handleSaveName = () => {
     if (playerName.trim()) {
@@ -278,6 +292,39 @@ const PlayerView = ({ player, allPlayers, onBack, hideBackButton = false, isPlay
           <p className="text-center text-xs text-gray-500 mt-2">
             点击按钮向主持人展示线索
           </p>
+
+          {/* 调查官诅咒卡按钮 */}
+          {player.characterType === CharacterType.Inquisitor && (
+            <div className="mt-6 pt-4 border-t border-gray-600">
+              <h4 className="font-bold mb-3 text-yellow-400 text-center">
+                诅咒卡 {player.curseUsed ? '(已使用)' : '(可用)'}
+              </h4>
+              <div className="grid grid-cols-2 gap-3">
+                <button
+                  onClick={() => handleUseCurse('phoenix')}
+                  disabled={!!player.curseUsed}
+                  className="py-3 bg-red-600 text-white font-bold rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 disabled:bg-gray-500 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  把真诅咒给红队
+                </button>
+                <button
+                  onClick={() => handleUseCurse('gargoyle')}
+                  disabled={!!player.curseUsed}
+                  className="py-3 bg-blue-600 text-white font-bold rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:bg-gray-500 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  把真诅咒给蓝队
+                </button>
+              </div>
+              {player.curseUsed && (
+                <p className="text-center text-sm text-yellow-400 mt-2">
+                  已将真诅咒给{player.curseUsed === 'phoenix' ? '红队(凤凰氏族)' : '蓝队(石像鬼氏族)'}
+                </p>
+              )}
+              <p className="text-center text-xs text-gray-500 mt-2">
+                整局游戏只能使用一次
+              </p>
+            </div>
+          )}
         </div>
       ) : (
         // 主持人查看模式：显示返回按钮

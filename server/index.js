@@ -138,7 +138,8 @@ function generatePlayers(count) {
       accessCode: generateAccessCode(),
       reveals: [], // 初始化展示数组
       isOnline: false, // 在线状态
-      lastSeen: null // 最后在线时间
+      lastSeen: null, // 最后在线时间
+      curseUsed: null // 调查官诅咒卡使用状态
     });
   }
 
@@ -429,6 +430,46 @@ io.on('connection', (socket) => {
         io.to(roomId).emit('gameStateUpdated', {
           phase: room.gameState.phase,
           players: room.playerIdentities
+        });
+      }
+    }
+
+    // 处理调查官使用诅咒卡
+    if (action === 'useCurse') {
+      const playerIdentity = room.playerIdentities.find(p => p.id === playerId);
+      if (playerIdentity && playerIdentity.characterType === 10) { // 10 是调查官
+        // 检查是否已经使用过诅咒卡
+        if (playerIdentity.curseUsed) {
+          console.log(`⚠️ 玩家 ${playerId} (调查官) 尝试再次使用诅咒卡，但已经使用过`);
+          socket.emit('error', { message: '诅咒卡已经使用过了' });
+          return;
+        }
+
+        // 记录诅咒卡使用
+        playerIdentity.curseUsed = data.targetFaction; // 'phoenix' 或 'gargoyle'
+        room.lastActivity = Date.now();
+
+        console.log(`✨ 调查官 ${playerId} 使用诅咒卡，目标: ${data.targetFaction === 'phoenix' ? '红队(凤凰氏族)' : '蓝队(石像鬼氏族)'}`);
+
+        // 更新 room.gameState.players 以保持同步
+        if (room.gameState && room.gameState.players) {
+          const gameStatePlayer = room.gameState.players.find(p => p.id === playerId);
+          if (gameStatePlayer) {
+            gameStatePlayer.curseUsed = data.targetFaction;
+          }
+        }
+
+        // 广播更新后的游戏状态给所有客户端
+        io.to(roomId).emit('gameStateUpdated', {
+          phase: room.gameState.phase,
+          players: room.playerIdentities
+        });
+
+        // 发送特殊通知给主持人
+        io.to(roomId).emit('curseUsed', {
+          playerId,
+          playerName: playerIdentity.name || `玩家 ${playerId}`,
+          targetFaction: data.targetFaction
         });
       }
     }
