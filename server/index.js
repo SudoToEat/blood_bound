@@ -286,7 +286,12 @@ app.post('/api/rooms/:roomId/restart', (req, res) => {
 // WebSocket连接处理
 io.on('connection', (socket) => {
   console.log('客户端连接:', socket.id);
-  
+
+  // 心跳检测 - 响应客户端的ping
+  socket.on('ping', () => {
+    socket.emit('pong', { timestamp: Date.now() });
+  });
+
   // 加入房间
   socket.on('joinRoom', ({ roomId, playerId }) => {
     const room = rooms.get(roomId);

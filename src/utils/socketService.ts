@@ -74,10 +74,14 @@ class SocketService {
     // 清除已有的心跳
     this.stopHeartbeat();
 
+    // 定期发送ping，并检测心跳超时
     this.heartbeatInterval = setInterval(() => {
       if (this.socket?.connected) {
+        // 发送ping请求
+        this.socket.emit(SOCKET_EVENTS.PING);
+
         const now = Date.now();
-        // 如果超过配置时间没有收到任何消息，可能连接有问题
+        // 如果超过配置时间没有收到任何消息（包括pong），可能连接有问题
         if (this.lastHeartbeat > 0 && now - this.lastHeartbeat > NETWORK_CONFIG.HEARTBEAT_TIMEOUT) {
           logger.warn('心跳超时，可能连接异常');
           this.updateConnectionStatus('error', '连接可能已断开');
@@ -172,6 +176,11 @@ class SocketService {
 
     // 监听所有消息以更新心跳时间
     this.socket.onAny(() => {
+      this.lastHeartbeat = Date.now();
+    });
+
+    // 监听pong响应
+    this.socket.on(SOCKET_EVENTS.PONG, () => {
       this.lastHeartbeat = Date.now();
     });
 

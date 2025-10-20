@@ -175,6 +175,7 @@ export const SOCKET_EVENTS = {
   JOIN_ROOM: 'joinRoom',
   UPDATE_GAME_STATE: 'updateGameState',
   PLAYER_ACTION: 'playerAction',
+  PING: 'ping',  // 心跳ping
 
   // 客户端接收
   ROOM_STATE: 'roomState',
@@ -183,6 +184,7 @@ export const SOCKET_EVENTS = {
   PLAYER_LEFT: 'playerLeft',
   PLAYER_ACTION_EVENT: 'playerAction',
   PLAYER_STATUS_CHANGED: 'playerStatusChanged',
+  PONG: 'pong',  // 心跳pong
 
   // 连接事件
   CONNECT: 'connect',
