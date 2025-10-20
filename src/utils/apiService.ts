@@ -1,9 +1,11 @@
+import { logger } from './logger';
+
 // 动态获取API基础URL：使用当前主机名但连接到3000端口
 // 这样可以支持localhost和局域网IP访问
 const hostname = window.location.hostname;
 const API_BASE_URL = `http://${hostname}:3000/api`;
 
-console.log('API服务初始化，基础URL:', API_BASE_URL);
+logger.log('API服务初始化，基础URL:', API_BASE_URL);
 
 export interface RoomInfo {
   roomId: string;
@@ -26,7 +28,7 @@ export class ApiService {
   // 创建房间
   static async createRoom(playerCount: number): Promise<CreateRoomResponse> {
     try {
-      console.log('发送创建房间请求:', { playerCount });
+      logger.log('发送创建房间请求:', { playerCount });
       const response = await fetch(`${API_BASE_URL}/rooms`, {
         method: 'POST',
         headers: {
@@ -37,15 +39,15 @@ export class ApiService {
 
       if (!response.ok) {
         const errorText = await response.text();
-        console.error('服务器返回错误:', response.status, errorText);
+        logger.error('服务器返回错误:', response.status, errorText);
         throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
       }
 
       const data = await response.json();
-      console.log('创建房间成功:', data);
+      logger.log('创建房间成功:', data);
       return data;
     } catch (error) {
-      console.error('创建房间失败:', error);
+      logger.error('创建房间失败:', error);
       throw error;
     }
   }
@@ -64,7 +66,7 @@ export class ApiService {
 
       return await response.json();
     } catch (error) {
-      console.error('获取房间信息失败:', error);
+      logger.error('获取房间信息失败:', error);
       throw error;
     }
   }
@@ -72,7 +74,7 @@ export class ApiService {
   // 开始游戏
   static async startGame(roomId: string): Promise<RoomInfo> {
     try {
-      console.log('发送开始游戏请求:', roomId);
+      logger.log('发送开始游戏请求:', roomId);
       const response = await fetch(`${API_BASE_URL}/rooms/${roomId}/start`, {
         method: 'POST',
         headers: {
@@ -85,15 +87,15 @@ export class ApiService {
           throw new Error('房间不存在');
         }
         const errorText = await response.text();
-        console.error('服务器返回错误:', response.status, errorText);
+        logger.error('服务器返回错误:', response.status, errorText);
         throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
       }
 
       const data = await response.json();
-      console.log('开始游戏成功，获得游戏状态:', data);
+      logger.log('开始游戏成功，获得游戏状态:', data);
       return data;
     } catch (error) {
-      console.error('开始游戏失败:', error);
+      logger.error('开始游戏失败:', error);
       throw error;
     }
   }
@@ -101,7 +103,7 @@ export class ApiService {
   // 重新开始游戏
   static async restartGame(roomId: string): Promise<RoomInfo> {
     try {
-      console.log('发送重新开始游戏请求:', roomId);
+      logger.log('发送重新开始游戏请求:', roomId);
       const response = await fetch(`${API_BASE_URL}/rooms/${roomId}/restart`, {
         method: 'POST',
         headers: {
@@ -114,15 +116,15 @@ export class ApiService {
           throw new Error('房间不存在');
         }
         const errorText = await response.text();
-        console.error('服务器返回错误:', response.status, errorText);
+        logger.error('服务器返回错误:', response.status, errorText);
         throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
       }
 
       const data = await response.json();
-      console.log('重新开始游戏成功，获得新游戏状态:', data);
+      logger.log('重新开始游戏成功，获得新游戏状态:', data);
       return data;
     } catch (error) {
-      console.error('重新开始游戏失败:', error);
+      logger.error('重新开始游戏失败:', error);
       throw error;
     }
   }
@@ -138,7 +140,7 @@ export class ApiService {
 
       return await response.json();
     } catch (error) {
-      console.error('健康检查失败:', error);
+      logger.error('健康检查失败:', error);
       throw error;
     }
   }

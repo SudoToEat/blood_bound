@@ -2,6 +2,7 @@ import { Player } from '../types/gameTypes'
 import { getCharacterImage } from '../assets/characters'
 import { getCharacterName, getFactionName, getFactionColor } from '../utils/gameUtils'
 import { useState } from 'react'
+import { logger } from '../utils/logger'
 
 interface PlayerCardProps {
   player: Player
@@ -10,10 +11,14 @@ interface PlayerCardProps {
   onToggleReveal?: () => void // 新增：切换揭示状态的回调
   onHeal?: () => void // 新增：恢复血量的回调
   showOnlineStatus?: boolean // 是否显示在线状态
+  forceShowCurse?: boolean // 强制显示诅咒信息（用于揭示所有身份）
 }
 
-const PlayerCard = ({ player, onClick, showCharacterImage = false, onToggleReveal, onHeal, showOnlineStatus = false }: PlayerCardProps) => {
+const PlayerCard = ({ player, onClick, showCharacterImage = false, onToggleReveal, onHeal, showOnlineStatus = false, forceShowCurse = false }: PlayerCardProps) => {
   const [showCurseDetail, setShowCurseDetail] = useState(false)
+
+  // 当forceShowCurse为true时，自动展开诅咒详情
+  const shouldShowCurse = forceShowCurse || showCurseDetail
   const characterImage = getCharacterImage(player.characterType)
   const characterName = getCharacterName(player.characterType)
   const factionName = getFactionName(player.faction)
@@ -23,7 +28,7 @@ const PlayerCard = ({ player, onClick, showCharacterImage = false, onToggleRevea
   const isRevealed = player.revealedFaction || player.revealedRank
 
   // 调试：输出玩家信息
-  console.log(`PlayerCard ${player.id}: name="${player.name}", characterName="${characterName}"`);
+  logger.log(`PlayerCard ${player.id}: name="${player.name}", characterName="${characterName}"`);
 
   // 处理揭示按钮点击，阻止事件冒泡
   const handleToggleReveal = (e: React.MouseEvent) => {
@@ -191,17 +196,20 @@ const PlayerCard = ({ player, onClick, showCharacterImage = false, onToggleRevea
           <button
             onClick={(e) => {
               e.stopPropagation()
-              setShowCurseDetail(!showCurseDetail)
+              if (!forceShowCurse) {
+                setShowCurseDetail(!showCurseDetail)
+              }
             }}
+            disabled={forceShowCurse}
             className={`w-full py-1 px-2 rounded text-sm transition-colors ${
-              showCurseDetail
+              shouldShowCurse
                 ? player.hasCurse === 'real'
                   ? 'bg-orange-600 hover:bg-orange-700'
                   : 'bg-purple-600 hover:bg-purple-700'
                 : 'bg-orange-500 hover:bg-orange-600'
-            }`}
+            } ${forceShowCurse ? 'cursor-not-allowed opacity-90' : ''}`}
           >
-            {showCurseDetail
+            {shouldShowCurse
               ? player.hasCurse === 'real' ? '⚠️ 真诅咒' : '✨ 假诅咒'
               : '🔓 显示诅咒'}
           </button>

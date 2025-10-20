@@ -9,8 +9,10 @@ import TestPage from './components/TestPage'
 import CharacterDemo from './components/CharacterDemo'
 import PlayerAccessDebug from './components/PlayerAccessDebug'
 import { GameProvider, useGame } from './context/GameContext'
+import { ToastProvider } from './context/ToastContext'
 import ErrorBoundary from './components/ErrorBoundary'
 import ConnectionStatusBar from './components/ConnectionStatusBar'
+import { logger } from './utils/logger'
 
 // 主路由组件
 function AppRoutes() {
@@ -43,7 +45,7 @@ function MainApp() {
   // 页面加载时检查是否有已保存的游戏状态
   useEffect(() => {
     if (state.roomId && state.gamePhase === 'playing') {
-      console.log('检测到已保存的游戏，直接进入游戏阶段')
+      logger.log('检测到已保存的游戏，直接进入游戏阶段')
       setGameStage('game')
       setSelectedPlayerCount(state.playerCount)
     }
@@ -52,7 +54,7 @@ function MainApp() {
   // 监听 gamePhase 变化，自动切换到游戏阶段
   useEffect(() => {
     if (state.gamePhase === 'playing' && gameStage !== 'game') {
-      console.log('游戏已开始，切换到游戏阶段')
+      logger.log('游戏已开始，切换到游戏阶段')
       setGameStage('game')
     }
   }, [state.gamePhase, gameStage])
@@ -66,21 +68,21 @@ function MainApp() {
 
       // 等待房间创建成功，使用API返回值而不是检查state（避免闭包陷阱）
       const roomId = await createRoom(playerCount);
-      console.log('房间创建成功:', roomId);
+      logger.log('房间创建成功:', roomId);
 
       // 验证roomId有效性（使用返回值，而不是闭包中的state）
       if (!roomId || roomId.trim() === '') {
-        console.error('服务器未返回有效的房间ID');
+        logger.error('服务器未返回有效的房间ID');
         setError('服务器未返回有效的房间ID，请重试');
         throw new Error('服务器未返回有效的房间ID');
       }
 
       // 房间创建成功，转换到房间阶段
       // dispatch已在createRoom内部执行，state会在下次渲染时更新
-      console.log('GameContext已更新房间ID，切换到房间阶段');
+      logger.log('GameContext已更新房间ID，切换到房间阶段');
       setGameStage('room');
     } catch (error) {
-      console.error('创建房间失败:', error);
+      logger.error('创建房间失败:', error);
       setError(error instanceof Error ? error.message : '创建房间失败，请重试');
       throw error; // 将错误传递给调用者
     } finally {
@@ -144,20 +146,22 @@ function MainApp() {
 function App() {
   return (
     <ErrorBoundary>
-      <GameProvider>
-        <ConnectionStatusBar />
-        <Router>
-          <Routes>
-            <Route path="/" element={<AppRoutes />} />
-            <Route path="/access/:roomId/:playerId" element={<PlayerAccess />} />
-            <Route path="/debug/:roomId/:playerId" element={<PlayerAccessDebug />} />
-            <Route path="/game" element={<GameBoard onBackToSetup={() => {}} />} />
-            <Route path="/test" element={<TestPage />} />
-            <Route path="/demo" element={<CharacterDemo />} />
-            <Route path="*" element={<AppRoutes />} />
-          </Routes>
-        </Router>
-      </GameProvider>
+      <ToastProvider>
+        <GameProvider>
+          <ConnectionStatusBar />
+          <Router>
+            <Routes>
+              <Route path="/" element={<AppRoutes />} />
+              <Route path="/access/:roomId/:playerId" element={<PlayerAccess />} />
+              <Route path="/debug/:roomId/:playerId" element={<PlayerAccessDebug />} />
+              <Route path="/game" element={<GameBoard onBackToSetup={() => {}} />} />
+              <Route path="/test" element={<TestPage />} />
+              <Route path="/demo" element={<CharacterDemo />} />
+              <Route path="*" element={<AppRoutes />} />
+            </Routes>
+          </Router>
+        </GameProvider>
+      </ToastProvider>
     </ErrorBoundary>
   )
 }

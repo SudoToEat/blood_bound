@@ -131,7 +131,7 @@ function generatePlayers(count) {
   for (let i = 0; i < count; i++) {
     const character = shuffledCharacters[i];
 
-    players.push({
+    const player = {
       id: i + 1,
       characterType: character.characterType,
       faction: character.faction,
@@ -146,7 +146,14 @@ function generatePlayers(count) {
       lastSeen: null, // 最后在线时间
       hasCurse: null, // 玩家持有的诅咒卡类型
       curseDistributed: false // 审判官是否已分配诅咒卡
-    });
+    };
+
+    // 如果是中立角色（调查官），随机分配一个向下家展示的阵营颜色
+    if (character.characterType === 10) { // 10 是调查官的 characterType
+      player.displayedFactionToNext = Math.random() < 0.5 ? 'red' : 'blue';
+    }
+
+    players.push(player);
   }
 
   return players;

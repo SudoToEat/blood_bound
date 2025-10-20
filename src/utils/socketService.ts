@@ -1,4 +1,5 @@
 import { io, Socket } from 'socket.io-client';
+import { logger } from './logger';
 
 // 连接状态枚举
 export enum ConnectionStatus {
@@ -30,7 +31,7 @@ class SocketService {
     // 这样可以支持localhost和局域网IP访问
     const hostname = window.location.hostname;
     this.serverUrl = `http://${hostname}:3000`;
-    console.log('初始化SocketService，服务器URL:', this.serverUrl);
+    logger.log('初始化SocketService，服务器URL:', this.serverUrl);
   }
 
   // 获取当前连接状态
@@ -41,14 +42,14 @@ class SocketService {
   // 更新连接状态并通知所有监听器
   private updateConnectionStatus(status: ConnectionStatus, message?: string) {
     this.connectionStatus = status;
-    console.log(`连接状态变更: ${status}`, message || '');
+    logger.log(`连接状态变更: ${status}`, message || '');
 
     // 通知所有状态监听器
     this.statusCallbacks.forEach(callback => {
       try {
         callback(status, message);
       } catch (error) {
-        console.error('状态回调执行错误:', error);
+        logger.error('状态回调执行错误:', error);
       }
     });
   }
@@ -73,14 +74,14 @@ class SocketService {
     this.heartbeatInterval = setInterval(() => {
       if (this.socket?.connected) {
         const now = Date.now();
-        // 如果超过30秒没有收到任何消息，可能连接有问题
-        if (this.lastHeartbeat > 0 && now - this.lastHeartbeat > 30000) {
-          console.warn('心跳超时，可能连接异常');
+        // 如果超过60秒没有收到任何消息，可能连接有问题
+        // 注意：lastHeartbeat 会在 socket.onAny() 中更新，这里只做检查
+        if (this.lastHeartbeat > 0 && now - this.lastHeartbeat > 60000) {
+          logger.warn('心跳超时，可能连接异常');
           this.updateConnectionStatus(ConnectionStatus.ERROR, '连接可能已断开');
         }
-        this.lastHeartbeat = now;
       }
-    }, 5000); // 每5秒检测一次
+    }, 10000); // 每10秒检测一次
   }
 
   // 停止心跳检测
@@ -106,13 +107,13 @@ class SocketService {
     this.reconnectAttempts = 0;
 
     if (this.socket) {
-      console.log('断开现有WebSocket连接');
+      logger.log('断开现有WebSocket连接');
       this.socket.disconnect();
     }
 
     this.updateConnectionStatus(ConnectionStatus.CONNECTING, '正在连接服务器...');
 
-    console.log(`尝试连接到WebSocket服务器: ${this.serverUrl}, 房间ID: ${roomId}, 玩家ID: ${playerId}`);
+    logger.log(`尝试连接到WebSocket服务器: ${this.serverUrl}, 房间ID: ${roomId}, 玩家ID: ${playerId}`);
     this.socket = io(this.serverUrl, {
       reconnectionAttempts: this.maxReconnectAttempts,
       reconnectionDelay: this.baseReconnectInterval,
@@ -123,24 +124,24 @@ class SocketService {
     });
 
     this.socket.on('connect', () => {
-      console.log(`✅ WebSocket连接成功, socketId: ${this.socket?.id}`);
+      logger.log(`✅ WebSocket连接成功, socketId: ${this.socket?.id}`);
       this.updateConnectionStatus(ConnectionStatus.CONNECTED, '已连接到服务器');
       this.reconnectAttempts = 0; // 重置重连计数
       this.lastHeartbeat = Date.now();
       this.startHeartbeat(); // 启动心跳检测
 
-      console.log(`加入房间: ${roomId}, 玩家ID: ${playerId}`);
+      logger.log(`加入房间: ${roomId}, 玩家ID: ${playerId}`);
       this.socket?.emit('joinRoom', { roomId, playerId });
     });
 
     this.socket.on('connect_error', (error) => {
-      console.error('❌ WebSocket连接错误:', error);
+      logger.error('❌ WebSocket连接错误:', error);
       this.updateConnectionStatus(ConnectionStatus.ERROR, `连接失败: ${error.message}`);
       // Socket.IO 会自动尝试重连，这里只是记录错误
     });
 
     this.socket.on('disconnect', (reason) => {
-      console.log(`🔌 WebSocket连接断开, 原因: ${reason}`);
+      logger.log(`🔌 WebSocket连接断开, 原因: ${reason}`);
       this.stopHeartbeat(); // 停止心跳检测
 
       if (reason === 'io server disconnect') {
@@ -158,7 +159,7 @@ class SocketService {
     });
 
     this.socket.on('error', (error) => {
-      console.error('❌ WebSocket错误:', error);
+      logger.error('❌ WebSocket错误:', error);
       this.updateConnectionStatus(ConnectionStatus.ERROR, `错误: ${error}`);
     });
 
@@ -169,12 +170,12 @@ class SocketService {
 
     // Socket.IO 自动重连事件
     this.socket.on('reconnect_attempt', (attemptNumber) => {
-      console.log(`🔄 尝试重连 (${attemptNumber}/${this.maxReconnectAttempts})...`);
+      logger.log(`🔄 尝试重连 (${attemptNumber}/${this.maxReconnectAttempts})...`);
       this.updateConnectionStatus(ConnectionStatus.RECONNECTING, `重连中... (${attemptNumber}/${this.maxReconnectAttempts})`);
     });
 
     this.socket.on('reconnect', (attemptNumber) => {
-      console.log(`✅ WebSocket重连成功，尝试次数: ${attemptNumber}`);
+      logger.log(`✅ WebSocket重连成功，尝试次数: ${attemptNumber}`);
       this.updateConnectionStatus(ConnectionStatus.CONNECTED, '重连成功');
       this.reconnectAttempts = 0;
       this.lastHeartbeat = Date.now();
@@ -182,13 +183,13 @@ class SocketService {
 
       // 重新加入房间
       if (this.roomId && this.playerId !== null) {
-        console.log(`重新加入房间: ${this.roomId}, 玩家ID: ${this.playerId}`);
+        logger.log(`重新加入房间: ${this.roomId}, 玩家ID: ${this.playerId}`);
         this.socket?.emit('joinRoom', { roomId: this.roomId, playerId: this.playerId });
       }
     });
 
     this.socket.on('reconnect_failed', () => {
-      console.error('❌ WebSocket重连失败，已达最大重连次数');
+      logger.error('❌ WebSocket重连失败，已达最大重连次数');
       this.updateConnectionStatus(ConnectionStatus.ERROR, '无法连接到服务器，请刷新页面重试');
     });
 
@@ -285,7 +286,7 @@ class SocketService {
       this.reconnectAttempts++;
       const delay = this.getReconnectDelay();
 
-      console.log(`🔄 计划重连 (${this.reconnectAttempts}/${this.maxReconnectAttempts})，${delay}ms 后重试...`);
+      logger.log(`🔄 计划重连 (${this.reconnectAttempts}/${this.maxReconnectAttempts})，${delay}ms 后重试...`);
       this.updateConnectionStatus(
         ConnectionStatus.RECONNECTING,
         `重连中... (${this.reconnectAttempts}/${this.maxReconnectAttempts})`
@@ -295,13 +296,13 @@ class SocketService {
       if (!this.socket?.connected && this.roomId && this.playerId !== null) {
         setTimeout(() => {
           if (!this.socket?.connected) {
-            console.log('⚡ 手动重新连接...');
+            logger.log('⚡ 手动重新连接...');
             this.connect(this.roomId!, this.playerId!);
           }
         }, delay);
       }
     } else {
-      console.error('❌ 达到最大重连次数，无法重新连接到服务器');
+      logger.error('❌ 达到最大重连次数，无法重新连接到服务器');
       this.updateConnectionStatus(ConnectionStatus.ERROR, '无法连接到服务器，请刷新页面重试');
     }
   }

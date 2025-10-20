@@ -1,6 +1,8 @@
 import React, { useState } from 'react'
 import { useGame } from '../context/GameContext'
 import { QRCodeDisplay } from './QRCodeDisplay'
+import LoadingSpinner from './ui/LoadingSpinner'
+import { logger } from '../utils/logger'
 
 interface RoomSetupProps {
   onRoomReady: () => void;
@@ -18,8 +20,7 @@ export const RoomSetup: React.FC<RoomSetupProps> = ({ onRoomReady, playerCount }
     // 房间未创建好时显示加载中
     return (
       <div className="max-w-md mx-auto p-6 bg-white rounded-lg shadow-lg text-center">
-        <h2 className="text-2xl font-bold mb-6 text-gray-800">正在创建房间...</h2>
-        <div className="text-gray-500">请稍候...</div>
+        <LoadingSpinner size="lg" message="正在创建房间..." />
       </div>
     )
   }
@@ -28,7 +29,7 @@ export const RoomSetup: React.FC<RoomSetupProps> = ({ onRoomReady, playerCount }
     try {
       setIsStarting(true)
       setError(null)
-      console.log('主持人点击开始游戏')
+      logger.log('主持人点击开始游戏')
 
       // 调用startGame获取游戏状态
       await startGame()
@@ -36,7 +37,7 @@ export const RoomSetup: React.FC<RoomSetupProps> = ({ onRoomReady, playerCount }
       // 成功后切换到游戏面板
       onRoomReady()
     } catch (error) {
-      console.error('开始游戏失败:', error)
+      logger.error('开始游戏失败:', error)
       setError(error instanceof Error ? error.message : '开始游戏失败')
     } finally {
       setIsStarting(false)

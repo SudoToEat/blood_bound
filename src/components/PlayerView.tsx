@@ -3,7 +3,10 @@ import { getCharacterName, getCharacterAbilityDescription, getFactionName, getFa
 import { getCharacterCardImage } from '../assets/characters'
 import { useState, useEffect } from 'react'
 import { useGame } from '../context/GameContext'
+import { useToast } from '../context/ToastContext'
+import LoadingSpinner from './ui/LoadingSpinner'
 import RulesModal from './RulesModal'
+import { logger } from '../utils/logger'
 
 interface PlayerViewProps {
   player: Player
@@ -19,12 +22,13 @@ const PlayerView = ({ player, allPlayers, onBack, hideBackButton = false, isPlay
   const [showRules, setShowRules] = useState(false);
   const [isEditingName, setIsEditingName] = useState(false);
   const [playerName, setPlayerName] = useState(player.name || '');
-  const { sendPlayerAction, updatePlayerName } = useGame();
+  const { sendPlayerAction, updatePlayerName, state } = useGame();
+  const toast = useToast();
 
   useEffect(() => {
     // 检查玩家对象是否完整
     if (!player || !player.characterType || !player.faction) {
-      console.error('玩家身份信息不完整:', player);
+      logger.error('玩家身份信息不完整:', player);
       setError('身份未分配，请等待主持人开始游戏或刷新页面');
       return;
     }
@@ -37,10 +41,10 @@ const PlayerView = ({ player, allPlayers, onBack, hideBackButton = false, isPlay
       player.reveals = [];
     }
     if (player.reveals.length >= 3) {
-      alert('已经展示了3个线索');
+      toast.warning('已经展示了3个线索');
       return;
     }
-    console.log(`玩家 ${player.id} 展示线索: ${revealType}`);
+    logger.log(`玩家 ${player.id} 展示线索: ${revealType}`);
     sendPlayerAction('addReveal', { revealType });
   };
 
@@ -79,14 +83,17 @@ const PlayerView = ({ player, allPlayers, onBack, hideBackButton = false, isPlay
 
     // 验证分配数量
     if (allocatedCounts.real !== availableCounts.real || allocatedCounts.fake !== availableCounts.fake) {
-      alert(`必须分配完所有诅咒卡！\n真诅咒：${allocatedCounts.real}/${availableCounts.real}\n假诅咒：${allocatedCounts.fake}/${availableCounts.fake}`);
+      toast.error(`必须分配完所有诅咒卡！\n真诅咒：${allocatedCounts.real}/${availableCounts.real}\n假诅咒：${allocatedCounts.fake}/${availableCounts.fake}`);
       return;
     }
 
-    if (confirm('确定要分配这些诅咒卡吗？此操作整局游戏只能执行一次！')) {
-      console.log(`审判官 ${player.id} 分配诅咒卡:`, curseAllocations);
-      sendPlayerAction('distributeCurses', { allocations: curseAllocations });
-    }
+    toast.confirm(
+      '确定要分配这些诅咒卡吗？此操作整局游戏只能执行一次！',
+      () => {
+        logger.log(`审判官 ${player.id} 分配诅咒卡:`, curseAllocations);
+        sendPlayerAction('distributeCurses', { allocations: curseAllocations });
+      }
+    );
   };
 
   // 处理姓名保存
@@ -95,7 +102,7 @@ const PlayerView = ({ player, allPlayers, onBack, hideBackButton = false, isPlay
       updatePlayerName(playerName.trim());
       setIsEditingName(false);
     } else {
-      alert('姓名不能为空');
+      toast.warning('姓名不能为空');
     }
   };
 
@@ -131,10 +138,7 @@ const PlayerView = ({ player, allPlayers, onBack, hideBackButton = false, isPlay
   if (!isLoaded) {
     return (
       <div className="bg-gray-800 rounded-lg p-6 w-full max-w-lg mx-auto">
-        <div className="text-center mb-6">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <h2 className="text-xl font-semibold text-gray-200 mb-2">正在加载身份信息...</h2>
-        </div>
+        <LoadingSpinner size="lg" message="正在加载身份信息..." />
       </div>
     );
   }
@@ -148,6 +152,14 @@ const PlayerView = ({ player, allPlayers, onBack, hideBackButton = false, isPlay
     <div className="bg-gray-800 rounded-lg p-6 w-full max-w-lg mx-auto">
       {/* 规则弹窗 */}
       {showRules && <RulesModal onClose={() => setShowRules(false)} />}
+
+      {/* 房间号显示 */}
+      {state.roomId && (
+        <div className="mb-4 p-2 bg-blue-900 border border-blue-700 rounded-lg text-center">
+          <span className="text-xs text-blue-300">房间号:</span>
+          <span className="ml-2 text-lg font-mono font-bold text-blue-100">{state.roomId}</span>
+        </div>
+      )}
 
       <div className="text-center mb-6">
         <div className="flex justify-between items-center mb-2">
@@ -268,6 +280,23 @@ const PlayerView = ({ player, allPlayers, onBack, hideBackButton = false, isPlay
             )}
           </ul>
         </div>
+
+        {/* 调查官专属：显示给下家展示的阵营颜色 */}
+        {player.characterType === CharacterType.Inquisitor && player.displayedFactionToNext && (
+          <div className="bg-purple-900 border-2 border-purple-500 p-4 rounded-lg mt-4">
+            <h4 className="font-bold mb-2 text-purple-300">你向下一位玩家展示的阵营</h4>
+            <div className="flex items-center justify-center">
+              <span className={`text-2xl font-bold ${
+                player.displayedFactionToNext === 'red' ? 'text-red-500' : 'text-blue-500'
+              }`}>
+                {player.displayedFactionToNext === 'red' ? '🔴 凤凰氏族（红色）' : '🔵 石像鬼氏族（蓝色）'}
+              </span>
+            </div>
+            <p className="text-xs text-gray-400 text-center mt-2">
+              这个颜色在整局游戏中保持不变
+            </p>
+          </div>
+        )}
 
         {/* 显示已展示的线索 - 对主机和玩家都显示 */}
         {player.reveals && player.reveals.length > 0 && (

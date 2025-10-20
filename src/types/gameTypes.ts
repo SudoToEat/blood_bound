@@ -46,6 +46,7 @@ export interface Player {
   lastSeen?: number | null // 最后在线时间（时间戳）
   hasCurse?: 'real' | 'fake' | null // 玩家是否持有诅咒卡：真诅咒(real)、假诅咒(fake)、无(null)
   curseDistributed?: boolean // 审判官是否已分配诅咒卡
+  displayedFactionToNext?: 'red' | 'blue' // 中立玩家（调查官）向下一位玩家展示的阵营颜色
 }
 
 // 角色能力描述

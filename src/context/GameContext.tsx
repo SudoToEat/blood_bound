@@ -3,6 +3,7 @@ import { generatePlayers, generateRoomId, generateAccessCode } from '../utils/ga
 import { Player, Faction, GameRoom } from '../types/gameTypes'
 import { ApiService } from '../utils/apiService'
 import { socketService } from '../utils/socketService'
+import { logger } from '../utils/logger'
 
 // 游戏状态类型
 export interface GameState {
@@ -81,7 +82,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         players: action.payload.players ? [...action.payload.players] : []
       } : null
 
-      console.log('UPDATE_GAME_DATA - 新游戏数据:', newGameData)
+      logger.log('UPDATE_GAME_DATA - 新游戏数据:', newGameData)
 
       return {
         ...state,
@@ -138,7 +139,7 @@ function getInitialState(): GameState {
       }
     }
   } catch (error) {
-    console.error('恢复游戏状态失败:', error)
+    logger.error('恢复游戏状态失败:', error)
   }
   return initialState
 }
@@ -171,31 +172,31 @@ export function GameProvider({ children }: { children: ReactNode }) {
 
       // 主持人也连接到WebSocket以接收玩家加入通知
       // 使用特殊的playerId (0) 表示主持人
-      console.log('主持人连接WebSocket，房间号:', roomId)
+      logger.log('主持人连接WebSocket，房间号:', roomId)
       const socket = socketService.connect(roomId, 0)
 
       // 监听玩家加入事件
       socketService.onPlayerJoined((data) => {
-        console.log('有玩家加入房间:', data)
+        logger.log('有玩家加入房间:', data)
         dispatch({ type: 'UPDATE_PLAYERS', payload: data.players })
       })
 
       // 监听房间状态更新
       socketService.onRoomState((roomState) => {
-        console.log('房间状态更新:', roomState)
+        logger.log('房间状态更新:', roomState)
         dispatch({ type: 'UPDATE_PLAYERS', payload: roomState.players })
       })
 
       // 监听游戏状态更新（包括玩家展示线索、名字等）
       socketService.onGameStateUpdated((gameState) => {
-        console.log('主持人收到游戏状态更新:', gameState)
+        logger.log('主持人收到游戏状态更新:', gameState)
         // 确保立即更新 gameData，触发重新渲染
         dispatch({ type: 'UPDATE_GAME_DATA', payload: { ...gameState } })
       })
 
       // 监听玩家在线状态变化
       socketService.onPlayerStatusChanged((data) => {
-        console.log('主持人收到玩家状态变化:', data);
+        logger.log('主持人收到玩家状态变化:', data);
         // 更新玩家在线状态
         if (response.roomId) {
           // 通过 dispatch 更新本地状态
@@ -222,63 +223,63 @@ export function GameProvider({ children }: { children: ReactNode }) {
   // 加入房间
   const joinRoom = async (roomId: string, playerId: number): Promise<void> => {
     try {
-      console.log(`尝试加入房间: ${roomId}, 玩家ID: ${playerId}`);
+      logger.log(`尝试加入房间: ${roomId}, 玩家ID: ${playerId}`);
       // 先获取房间信息
       const roomInfo = await ApiService.getRoomInfo(roomId)
-      console.log('获取房间信息成功:', roomInfo);
+      logger.log('获取房间信息成功:', roomInfo);
 
       dispatch({ type: 'SET_ROOM', payload: { roomId, playerCount: roomInfo.playerCount } })
       dispatch({ type: 'SET_PLAYER', payload: { playerId } })
 
       // 如果房间信息中已经有 gameState，立即设置
       if (roomInfo.gameState && roomInfo.gameState.players) {
-        console.log('房间已有游戏数据，立即设置');
+        logger.log('房间已有游戏数据，立即设置');
         dispatch({ type: 'UPDATE_GAME_DATA', payload: roomInfo.gameState })
         dispatch({ type: 'SET_GAME_PHASE', payload: 'playing' })
       }
 
       // 连接WebSocket（在注册监听器之前先连接）
       const socket = socketService.connect(roomId, playerId)
-      console.log('WebSocket连接初始化完成');
+      logger.log('WebSocket连接初始化完成');
 
       // 监听socket事件
       socketService.onRoomState((roomState) => {
-        console.log('=== 收到 roomState 事件 ===');
-        console.log('完整 roomState 数据:', JSON.stringify(roomState, null, 2));
-        console.log('roomState.players:', roomState.players);
-        console.log('roomState.gameState:', roomState.gameState);
+        logger.log('=== 收到 roomState 事件 ===');
+        logger.log('完整 roomState 数据:', JSON.stringify(roomState, null, 2));
+        logger.log('roomState.players:', roomState.players);
+        logger.log('roomState.gameState:', roomState.gameState);
 
         dispatch({ type: 'UPDATE_PLAYERS', payload: roomState.players })
 
         if (roomState.gameState) {
-          console.log('游戏状态存在，phase:', roomState.gameState.phase);
-          console.log('游戏玩家数据:', roomState.gameState.players);
+          logger.log('游戏状态存在，phase:', roomState.gameState.phase);
+          logger.log('游戏玩家数据:', roomState.gameState.players);
           dispatch({ type: 'UPDATE_GAME_DATA', payload: roomState.gameState })
 
           // 如果游戏已开始，设置游戏阶段为playing
           if (roomState.gameState.phase === 'playing') {
-            console.log('✅ 设置游戏阶段为 playing');
+            logger.log('✅ 设置游戏阶段为 playing');
             dispatch({ type: 'SET_GAME_PHASE', payload: 'playing' })
           } else {
-            console.log('⚠️ 游戏阶段不是 playing，是:', roomState.gameState.phase);
+            logger.log('⚠️ 游戏阶段不是 playing，是:', roomState.gameState.phase);
           }
         } else {
-          console.log('⚠️ roomState.gameState 不存在');
+          logger.log('⚠️ roomState.gameState 不存在');
         }
       })
 
       socketService.onPlayerJoined((data) => {
-        console.log('玩家加入:', data);
+        logger.log('玩家加入:', data);
         dispatch({ type: 'UPDATE_PLAYERS', payload: data.players })
       })
 
       socketService.onPlayerLeft((data) => {
-        console.log('玩家离开:', data);
+        logger.log('玩家离开:', data);
         dispatch({ type: 'UPDATE_PLAYERS', payload: data.players })
       })
 
       socketService.onGameStateUpdated((gameState) => {
-        console.log('游戏状态更新:', gameState);
+        logger.log('游戏状态更新:', gameState);
         dispatch({ type: 'UPDATE_GAME_DATA', payload: gameState })
         // 如果游戏已开始，设置游戏阶段为playing
         if (gameState.phase === 'playing') {
@@ -288,12 +289,12 @@ export function GameProvider({ children }: { children: ReactNode }) {
 
       socketService.onPlayerAction((data) => {
         // 处理其他玩家的操作
-        console.log('收到玩家操作:', data)
+        logger.log('收到玩家操作:', data)
       })
 
       // 监听玩家在线状态变化
       socketService.onPlayerStatusChanged((data) => {
-        console.log('玩家状态变化:', data);
+        logger.log('玩家状态变化:', data);
         // 更新玩家在线状态
         if (state.gameData && state.gameData.players) {
           const updatedPlayers = state.gameData.players.map((p: any) =>
@@ -312,7 +313,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
       dispatch({ type: 'SET_CONNECTION_STATUS', payload: true })
 
     } catch (error) {
-      console.error('加入房间失败:', error);
+      logger.error('加入房间失败:', error);
       const errorMessage = error instanceof Error ? error.message : '加入房间失败'
       dispatch({ type: 'SET_ERROR', payload: errorMessage })
       dispatch({ type: 'SET_CONNECTION_STATUS', payload: false })
@@ -327,9 +328,9 @@ export function GameProvider({ children }: { children: ReactNode }) {
         throw new Error('房间ID不存在，无法开始游戏');
       }
 
-      console.log('主持人开始游戏，房间号:', state.roomId);
+      logger.log('主持人开始游戏，房间号:', state.roomId);
       const gameData = await ApiService.startGame(state.roomId);
-      console.log('获得游戏状态:', gameData);
+      logger.log('获得游戏状态:', gameData);
 
       // 更新本地状态
       if (gameData.gameState) {
@@ -337,7 +338,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
         dispatch({ type: 'SET_GAME_PHASE', payload: 'playing' });
       }
     } catch (error) {
-      console.error('开始游戏失败:', error);
+      logger.error('开始游戏失败:', error);
       const errorMessage = error instanceof Error ? error.message : '开始游戏失败';
       dispatch({ type: 'SET_ERROR', payload: errorMessage });
       throw error;
@@ -351,9 +352,9 @@ export function GameProvider({ children }: { children: ReactNode }) {
         throw new Error('房间ID不存在，无法重新开始游戏');
       }
 
-      console.log('主持人重新开始游戏，房间号:', state.roomId);
+      logger.log('主持人重新开始游戏，房间号:', state.roomId);
       const gameData = await ApiService.restartGame(state.roomId);
-      console.log('获得新游戏状态:', gameData);
+      logger.log('获得新游戏状态:', gameData);
 
       // 更新本地状态
       if (gameData.gameState) {
@@ -361,7 +362,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
         dispatch({ type: 'SET_GAME_PHASE', payload: 'playing' });
       }
     } catch (error) {
-      console.error('重新开始游戏失败:', error);
+      logger.error('重新开始游戏失败:', error);
       const errorMessage = error instanceof Error ? error.message : '重新开始游戏失败';
       dispatch({ type: 'SET_ERROR', payload: errorMessage });
       throw error;
@@ -387,15 +388,15 @@ export function GameProvider({ children }: { children: ReactNode }) {
 
   // 更新玩家姓名
   const updatePlayerName = (name: string) => {
-    console.log('updatePlayerName 被调用, 姓名:', name);
-    console.log('当前 state.roomId:', state.roomId);
-    console.log('当前 state.playerId:', state.playerId);
+    logger.log('updatePlayerName 被调用, 姓名:', name);
+    logger.log('当前 state.roomId:', state.roomId);
+    logger.log('当前 state.playerId:', state.playerId);
 
     if (state.roomId && state.playerId) {
-      console.log(`✅ 发送更新姓名请求: 玩家 ${state.playerId} -> ${name}`);
+      logger.log(`✅ 发送更新姓名请求: 玩家 ${state.playerId} -> ${name}`);
       socketService.sendPlayerAction(state.roomId, state.playerId, 'updateName', { name });
     } else {
-      console.error('❌ 无法更新姓名: roomId 或 playerId 缺失');
+      logger.error('❌ 无法更新姓名: roomId 或 playerId 缺失');
     }
   }
 
@@ -411,11 +412,11 @@ export function GameProvider({ children }: { children: ReactNode }) {
     const reconnectToRoom = async () => {
       if (state.roomId && !state.isConnected) {
         try {
-          console.log('检测到已保存的房间号，尝试重新连接:', state.roomId)
+          logger.log('检测到已保存的房间号，尝试重新连接:', state.roomId)
 
           // 先调用 startGame 获取完整的游戏状态
           const gameData = await ApiService.startGame(state.roomId)
-          console.log('获取到游戏状态:', gameData)
+          logger.log('获取到游戏状态:', gameData)
 
           // 更新游戏数据
           if (gameData.gameState && gameData.gameState.players) {
@@ -428,24 +429,24 @@ export function GameProvider({ children }: { children: ReactNode }) {
 
           // 重新注册监听器
           socketService.onPlayerJoined((data) => {
-            console.log('有玩家加入房间:', data)
+            logger.log('有玩家加入房间:', data)
             dispatch({ type: 'UPDATE_PLAYERS', payload: data.players })
           })
 
           socketService.onRoomState((roomState) => {
-            console.log('房间状态更新:', roomState)
+            logger.log('房间状态更新:', roomState)
             dispatch({ type: 'UPDATE_PLAYERS', payload: roomState.players })
           })
 
           socketService.onGameStateUpdated((gameState) => {
-            console.log('主持人收到游戏状态更新:', gameState)
+            logger.log('主持人收到游戏状态更新:', gameState)
             dispatch({ type: 'UPDATE_GAME_DATA', payload: gameState })
           })
 
           dispatch({ type: 'SET_CONNECTION_STATUS', payload: true })
-          console.log('✅ 房间重新连接成功')
+          logger.log('✅ 房间重新连接成功')
         } catch (error) {
-          console.error('重新连接房间失败:', error)
+          logger.error('重新连接房间失败:', error)
           // 房间不存在或连接失败，清除保存的状态
           localStorage.removeItem(STORAGE_KEY)
           dispatch({ type: 'RESET_GAME' })

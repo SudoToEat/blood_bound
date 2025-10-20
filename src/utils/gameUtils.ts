@@ -65,7 +65,7 @@ export function generatePlayers(count: number): Player[] {
   for (let i = 0; i < count; i++) {
     const characterType = shuffledCharacterTypes[i]
     let faction: Faction
-    
+
     // 根据角色类型和索引确定阵营
     if (characterType === CharacterType.Inquisitor) {
       faction = Faction.Neutral
@@ -74,8 +74,8 @@ export function generatePlayers(count: number): Player[] {
     } else {
       faction = Faction.Gargoyle
     }
-    
-    players.push({
+
+    const player: Player = {
       id: i + 1,
       characterType,
       faction,
@@ -85,7 +85,14 @@ export function generatePlayers(count: number): Player[] {
       revealedFaction: false,
       revealedRank: false,
       accessCode: generateAccessCode()
-    })
+    }
+
+    // 如果是中立角色（调查官），随机分配一个向下家展示的阵营颜色
+    if (characterType === CharacterType.Inquisitor) {
+      player.displayedFactionToNext = Math.random() < 0.5 ? 'red' : 'blue'
+    }
+
+    players.push(player)
   }
   
   return players
@@ -174,6 +181,7 @@ export function getPreviousPlayer(players: Player[], currentPlayerId: number): P
 
 // 获取上一个玩家展示给当前玩家的阵营
 // 如果上一个玩家是弄臣（Jester），则展示相反的阵营
+// 如果上一个玩家是调查官（Inquisitor），则展示随机分配的颜色
 export function getPreviousPlayerDisplayedFaction(players: Player[], currentPlayerId: number): { player: Player; displayedFaction: Faction } | null {
   const previousPlayer = getPreviousPlayer(players, currentPlayerId)
   if (!previousPlayer) {
@@ -182,8 +190,16 @@ export function getPreviousPlayerDisplayedFaction(players: Player[], currentPlay
 
   let displayedFaction = previousPlayer.faction
 
+  // 如果上一个玩家是调查官（中立），展示随机分配的颜色
+  if (previousPlayer.characterType === CharacterType.Inquisitor) {
+    if (previousPlayer.displayedFactionToNext === 'red') {
+      displayedFaction = Faction.Phoenix
+    } else if (previousPlayer.displayedFactionToNext === 'blue') {
+      displayedFaction = Faction.Gargoyle
+    }
+  }
   // 如果上一个玩家是弄臣，展示相反的阵营
-  if (previousPlayer.characterType === CharacterType.Jester) {
+  else if (previousPlayer.characterType === CharacterType.Jester) {
     if (previousPlayer.faction === Faction.Phoenix) {
       displayedFaction = Faction.Gargoyle
     } else if (previousPlayer.faction === Faction.Gargoyle) {

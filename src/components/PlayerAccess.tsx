@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { useGame } from '../context/GameContext';
 import { useParams, useNavigate } from 'react-router-dom';
-import PlayerView from './PlayerView'
+import PlayerView from './PlayerView';
+import LoadingSpinner from './ui/LoadingSpinner';
+import { logger } from '../utils/logger'
 
 export const PlayerAccess: React.FC = () => {
   const { roomId, playerId } = useParams<{ roomId: string; playerId: string }>();
@@ -33,13 +35,13 @@ export const PlayerAccess: React.FC = () => {
       }
 
       try {
-        console.log('=== PlayerAccess 初始化 ===');
-        console.log('房间ID:', roomId);
-        console.log('玩家ID:', parsedPlayerId);
+        logger.log('=== PlayerAccess 初始化 ===');
+        logger.log('房间ID:', roomId);
+        logger.log('玩家ID:', parsedPlayerId);
 
         // 检查服务器连接
         const isServerHealthy = await checkServerHealth();
-        console.log('服务器健康检查:', isServerHealthy);
+        logger.log('服务器健康检查:', isServerHealthy);
         if (!isServerHealthy) {
           setError('无法连接到游戏服务器，请确保服务器正在运行');
           setIsLoading(false);
@@ -47,14 +49,14 @@ export const PlayerAccess: React.FC = () => {
         }
 
         // 加入房间
-        console.log('正在加入房间...');
+        logger.log('正在加入房间...');
         await joinRoom(roomId, parsedPlayerId);
-        console.log('加入房间成功');
+        logger.log('加入房间成功');
         setHasJoined(true);
         setIsLoading(false);
       } catch (err) {
         const errorMessage = err instanceof Error ? err.message : '加入房间失败';
-        console.error('加入房间失败:', err);
+        logger.error('加入房间失败:', err);
         setError(errorMessage);
         setIsLoading(false);
 
@@ -75,28 +77,28 @@ export const PlayerAccess: React.FC = () => {
 
   // 监听 state 变化，当 gameData 准备好时显示玩家身份
   useEffect(() => {
-    console.log('=== useEffect 触发 ===');
-    console.log('state.gameData:', state.gameData);
-    console.log('state.gameData?.players:', state.gameData?.players);
-    console.log('state.playerId:', state.playerId);
-    console.log('hasJoined:', hasJoined);
+    logger.log('=== useEffect 触发 ===');
+    logger.log('state.gameData:', state.gameData);
+    logger.log('state.gameData?.players:', state.gameData?.players);
+    logger.log('state.playerId:', state.playerId);
+    logger.log('hasJoined:', hasJoined);
 
     if (state.gameData?.players && state.playerId && hasJoined) {
-      console.log('=== State 已更新，检查玩家身份 ===');
-      console.log('gameData.players:', state.gameData.players);
-      console.log('当前 playerId:', state.playerId);
-      console.log('玩家类型:', typeof state.playerId);
+      logger.log('=== State 已更新，检查玩家身份 ===');
+      logger.log('gameData.players:', state.gameData.players);
+      logger.log('当前 playerId:', state.playerId);
+      logger.log('玩家类型:', typeof state.playerId);
 
       const playerObj = state.gameData.players.find((p: any) => {
-        console.log(`比较 p.id(${p.id}, ${typeof p.id}) === state.playerId(${state.playerId}, ${typeof state.playerId})`);
+        logger.log(`比较 p.id(${p.id}, ${typeof p.id}) === state.playerId(${state.playerId}, ${typeof state.playerId})`);
         return p.id === state.playerId;
       });
 
       if (playerObj) {
-        console.log('✅ 找到玩家身份:', playerObj);
+        logger.log('✅ 找到玩家身份:', playerObj);
         setIsLoading(false);
       } else {
-        console.log('⚠️ 未找到玩家身份');
+        logger.log('⚠️ 未找到玩家身份');
       }
     }
   }, [state.gameData, state.playerId, hasJoined]);
@@ -170,7 +172,7 @@ export const PlayerAccess: React.FC = () => {
 
     if (playerObj) {
       // 找到玩家身份，显示身份信息，并传递所有玩家数据
-      console.log('渲染玩家身份视图');
+      logger.log('渲染玩家身份视图');
       return (
         <div className="min-h-screen bg-gray-900 flex items-center justify-center p-4">
           <PlayerView
@@ -187,10 +189,10 @@ export const PlayerAccess: React.FC = () => {
   // 成功加入房间后的显示
   if (hasJoined && state.roomId && state.playerId) {
     // 添加调试日志
-    console.log('=== PlayerAccess 渲染状态 ===');
-    console.log('state.gamePhase:', state.gamePhase);
-    console.log('state.gameData:', state.gameData);
-    console.log('state.playerId:', state.playerId);
+    logger.log('=== PlayerAccess 渲染状态 ===');
+    logger.log('state.gamePhase:', state.gamePhase);
+    logger.log('state.gameData:', state.gameData);
+    logger.log('state.playerId:', state.playerId);
 
     return (
       <div className="min-h-screen bg-gray-900 flex items-center justify-center">
