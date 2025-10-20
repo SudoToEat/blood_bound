@@ -42,6 +42,8 @@ export interface Player {
   revealedRank: boolean
   accessCode?: string // 玩家访问代码，用于手机访问
   reveals?: ('red' | 'blue' | 'unknown')[] // 玩家展示的线索：红色(凤凰)、蓝色(石像鬼)、问号(未知)
+  isOnline?: boolean // 玩家在线状态
+  lastSeen?: number | null // 最后在线时间（时间戳）
 }
 
 // 角色能力描述

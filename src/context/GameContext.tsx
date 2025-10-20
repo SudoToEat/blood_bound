@@ -74,9 +74,18 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         currentTurn: action.payload,
       }
     case 'UPDATE_GAME_DATA':
+      // 创建深层新对象引用，确保 React 能检测到变化
+      const newGameData = action.payload ? {
+        ...action.payload,
+        // 确保 players 数组也是新的引用
+        players: action.payload.players ? [...action.payload.players] : []
+      } : null
+
+      console.log('UPDATE_GAME_DATA - 新游戏数据:', newGameData)
+
       return {
         ...state,
-        gameData: action.payload,
+        gameData: newGameData,
       }
     case 'SET_CONNECTION_STATUS':
       return {
@@ -177,10 +186,29 @@ export function GameProvider({ children }: { children: ReactNode }) {
         dispatch({ type: 'UPDATE_PLAYERS', payload: roomState.players })
       })
 
-      // 监听游戏状态更新（包括玩家展示线索等）
+      // 监听游戏状态更新（包括玩家展示线索、名字等）
       socketService.onGameStateUpdated((gameState) => {
         console.log('主持人收到游戏状态更新:', gameState)
-        dispatch({ type: 'UPDATE_GAME_DATA', payload: gameState })
+        // 确保立即更新 gameData，触发重新渲染
+        dispatch({ type: 'UPDATE_GAME_DATA', payload: { ...gameState } })
+      })
+
+      // 监听玩家在线状态变化
+      socketService.onPlayerStatusChanged((data) => {
+        console.log('主持人收到玩家状态变化:', data);
+        // 更新玩家在线状态
+        if (response.roomId) {
+          // 通过 dispatch 更新本地状态
+          dispatch({
+            type: 'UPDATE_GAME_DATA',
+            payload: {
+              ...state.gameData,
+              players: state.gameData?.players?.map((p: any) =>
+                p.id === data.playerId ? { ...p, isOnline: data.isOnline, lastSeen: Date.now() } : p
+              )
+            }
+          });
+        }
       })
 
       return roomId
@@ -261,6 +289,22 @@ export function GameProvider({ children }: { children: ReactNode }) {
       socketService.onPlayerAction((data) => {
         // 处理其他玩家的操作
         console.log('收到玩家操作:', data)
+      })
+
+      // 监听玩家在线状态变化
+      socketService.onPlayerStatusChanged((data) => {
+        console.log('玩家状态变化:', data);
+        // 更新玩家在线状态
+        if (room) {
+          const player = room.playerIdentities?.find(p => p.id === data.playerId);
+          if (player) {
+            player.isOnline = data.isOnline;
+            player.lastSeen = Date.now();
+
+            // 触发状态更新
+            dispatch({ type: 'UPDATE_GAME_DATA', payload: state.gameData });
+          }
+        }
       })
 
       // 设置连接状态

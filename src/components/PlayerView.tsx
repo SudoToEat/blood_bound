@@ -1,5 +1,6 @@
 import { Player, CharacterType } from '../types/gameTypes'
 import { getCharacterName, getCharacterAbilityDescription, getFactionName, getFactionColor, getPreviousPlayerDisplayedFaction } from '../utils/gameUtils'
+import { getCharacterCardImage } from '../assets/characters'
 import { useState, useEffect } from 'react'
 import { useGame } from '../context/GameContext'
 import RulesModal from './RulesModal'
@@ -179,6 +180,20 @@ const PlayerView = ({ player, allPlayers, onBack, hideBackButton = false, isPlay
       )}
 
       <div className="mb-6">
+        {/* 角色卡片图片 */}
+        <div className="mb-4 flex justify-center">
+          <img
+            src={getCharacterCardImage(player.characterType)}
+            alt={getCharacterName(player.characterType)}
+            className="w-full max-w-md rounded-lg shadow-lg"
+            onError={(e) => {
+              const target = e.target as HTMLImageElement
+              // 如果图片加载失败，显示占位符
+              target.style.display = 'none'
+            }}
+          />
+        </div>
+
         <div className="flex justify-between items-center mb-4">
           <div>
             <h3 className="text-lg font-bold">{getCharacterName(player.characterType)}</h3>

@@ -36,4 +36,24 @@ export const characterBackgrounds: Record<CharacterType, string> = {
 // 获取角色背景图片URL
 export function getCharacterBackground(characterType: CharacterType): string {
   return characterBackgrounds[characterType] || '/src/assets/characters/default-bg.png'
+}
+
+// 角色游戏卡片图片映射（完整的游戏卡片）
+// 使用本地存储的角色卡片图片
+export const characterCardImages: Record<CharacterType, string> = {
+  [CharacterType.Elder]: '/src/assets/characters/character_1.jpg',      // 长老
+  [CharacterType.Assassin]: '/src/assets/characters/character_2.jpg',   // 刺客
+  [CharacterType.Jester]: '/src/assets/characters/character_3.jpg',     // 弄臣
+  [CharacterType.Alchemist]: '/src/assets/characters/character_4.jpg',  // 炼金术士
+  [CharacterType.Mentalist]: '/src/assets/characters/character_5.jpg',  // 灵喻师
+  [CharacterType.Guardian]: '/src/assets/characters/character_6.jpg',   // 卫士
+  [CharacterType.Berserker]: '/src/assets/characters/character_7.jpg',  // 狂战士
+  [CharacterType.Mage]: '/src/assets/characters/character_8.jpg',       // 法师
+  [CharacterType.Geisha]: '/src/assets/characters/character_9.jpg',     // 舞妓
+  [CharacterType.Inquisitor]: '/src/assets/characters/character_10.jpg' // 调查官
+}
+
+// 获取角色游戏卡片图片URL
+export function getCharacterCardImage(characterType: CharacterType): string {
+  return characterCardImages[characterType] || '/src/assets/characters/default.svg'
 } 

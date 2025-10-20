@@ -136,7 +136,9 @@ function generatePlayers(count) {
       revealedFaction: false,
       revealedRank: false,
       accessCode: generateAccessCode(),
-      reveals: [] // 初始化展示数组
+      reveals: [], // 初始化展示数组
+      isOnline: false, // 在线状态
+      lastSeen: null // 最后在线时间
     });
   }
 
@@ -282,6 +284,13 @@ io.on('connection', (socket) => {
     socket.join(roomId);
     playerSessions.set(socket.id, { roomId, playerId });
 
+    // 获取该玩家的完整身份信息并更新在线状态
+    const playerIdentity = room.playerIdentities.find(p => p.id === playerId);
+    if (playerIdentity) {
+      playerIdentity.isOnline = true;
+      playerIdentity.lastSeen = Date.now();
+    }
+
     // 如果是主机(playerId === 0)，不加入到玩家列表中
     if (playerId !== 0) {
       // 如果房间里没有该玩家，添加到已加入列表
@@ -292,10 +301,13 @@ io.on('connection', (socket) => {
         const p = room.players.find(p => p.id === playerId);
         if (p && !p.socketId) p.socketId = socket.id;
       }
-    }
 
-    // 获取该玩家的完整身份信息
-    const playerIdentity = room.playerIdentities.find(p => p.id === playerId);
+      // 广播玩家在线状态变化
+      io.to(roomId).emit('playerStatusChanged', {
+        playerId,
+        isOnline: true
+      });
+    }
 
     // 构建房间状态，包含该玩家的完整身份
     const roomStateData = {
@@ -433,24 +445,39 @@ io.on('connection', (socket) => {
     if (session) {
       const { roomId, playerId } = session;
       const room = rooms.get(roomId);
-      
+
       if (room) {
+        // 更新玩家离线状态
+        const playerIdentity = room.playerIdentities.find(p => p.id === playerId);
+        if (playerIdentity) {
+          playerIdentity.isOnline = false;
+          playerIdentity.lastSeen = Date.now();
+        }
+
         // 用socketId精确移除
         const idx = room.players.findIndex(p => p.socketId === socket.id);
         if (idx > -1) {
           room.players.splice(idx, 1);
           room.lastActivity = Date.now();
-          
+
           // 通知其他玩家
           socket.to(roomId).emit('playerLeft', { playerId, players: room.players.map(p => p.id) });
-          
+
+          // 广播玩家离线状态变化（只对非主机）
+          if (playerId !== 0) {
+            io.to(roomId).emit('playerStatusChanged', {
+              playerId,
+              isOnline: false
+            });
+          }
+
           console.log(`玩家 ${playerId} 离开房间 ${roomId}`);
         }
       }
-      
+
       playerSessions.delete(socket.id);
     }
-    
+
     console.log('客户端断开连接:', socket.id);
   });
 });

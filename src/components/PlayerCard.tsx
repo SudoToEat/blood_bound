@@ -8,9 +8,10 @@ interface PlayerCardProps {
   showCharacterImage?: boolean
   onToggleReveal?: () => void // 新增：切换揭示状态的回调
   onHeal?: () => void // 新增：恢复血量的回调
+  showOnlineStatus?: boolean // 是否显示在线状态
 }
 
-const PlayerCard = ({ player, onClick, showCharacterImage = false, onToggleReveal, onHeal }: PlayerCardProps) => {
+const PlayerCard = ({ player, onClick, showCharacterImage = false, onToggleReveal, onHeal, showOnlineStatus = false }: PlayerCardProps) => {
   const characterImage = getCharacterImage(player.characterType)
   const characterName = getCharacterName(player.characterType)
   const factionName = getFactionName(player.faction)
@@ -18,6 +19,9 @@ const PlayerCard = ({ player, onClick, showCharacterImage = false, onToggleRevea
 
   // 判断是否已揭示身份（阵营或等级任一已揭示）
   const isRevealed = player.revealedFaction || player.revealedRank
+
+  // 调试：输出玩家信息
+  console.log(`PlayerCard ${player.id}: name="${player.name}", characterName="${characterName}"`);
 
   // 处理揭示按钮点击，阻止事件冒泡
   const handleToggleReveal = (e: React.MouseEvent) => {
@@ -36,7 +40,7 @@ const PlayerCard = ({ player, onClick, showCharacterImage = false, onToggleRevea
     if (reveal === 'red') return 'bg-red-500'
     if (reveal === 'blue') return 'bg-blue-500'
     if (reveal === 'unknown') return 'bg-gray-500'
-    return 'bg-gray-700' // 默认空状态
+    return 'bg-gray-600 border border-gray-500' // 默认空状态，使用更深的颜色和边框
   }
 
   // 获取展示指示器的内容
@@ -49,10 +53,22 @@ const PlayerCard = ({ player, onClick, showCharacterImage = false, onToggleRevea
 
   return (
     <div
-      className="bg-gray-800 rounded-lg p-4 cursor-pointer hover:bg-gray-700 transition-colors"
+      className="bg-gray-800 rounded-lg p-4 cursor-pointer hover:bg-gray-700 transition-colors relative"
       onClick={onClick}
     >
-      <div className="flex justify-between items-center mb-2">
+      {/* 在线状态指示器 - 仅在需要时显示 */}
+      {showOnlineStatus && (
+        <div className="absolute top-2 right-2 flex items-center gap-1">
+          <div
+            className={`w-3 h-3 rounded-full ${
+              player.isOnline ? 'bg-green-500 animate-pulse' : 'bg-gray-500'
+            }`}
+            title={player.isOnline ? '在线' : '离线'}
+          />
+        </div>
+      )}
+
+      <div className={`flex justify-between items-center mb-2 ${showOnlineStatus ? 'pr-4' : ''}`}>
         <h3 className="text-lg font-bold">{player.name || `玩家 ${player.id}`}</h3>
         <div className="flex gap-1">
           {Array.from({ length: 3 }).map((_, index) => {
@@ -104,14 +120,9 @@ const PlayerCard = ({ player, onClick, showCharacterImage = false, onToggleRevea
           等级: {player.revealedRank ? player.rank : '未揭示'}
         </div>
 
-        {/* 如果阵营或等级已揭示，显示玩家姓名和角色（如果有） */}
+        {/* 如果阵营或等级已揭示，显示角色 */}
         {(player.revealedFaction || player.revealedRank) && (
           <div className="mt-2 text-xs">
-            {player.name && (
-              <div className="text-gray-500 mb-1">
-                玩家姓名: {player.name}
-              </div>
-            )}
             <div className="text-yellow-400">
               角色: {characterName}
             </div>
@@ -138,6 +149,7 @@ const PlayerCard = ({ player, onClick, showCharacterImage = false, onToggleRevea
       )}
       
       <div className="mt-3 space-y-2">
+        {/* 次要操作：揭示/隐藏身份 */}
         {onToggleReveal && (
           <button
             onClick={handleToggleReveal}
@@ -147,9 +159,11 @@ const PlayerCard = ({ player, onClick, showCharacterImage = false, onToggleRevea
                 : 'bg-green-600 hover:bg-green-700'
             }`}
           >
-            {isRevealed ? '🙈 隐藏身份' : '👁️ 揭示身份'}
+            {isRevealed ? '🙈 隐藏身份' : '👀 揭示身份'}
           </button>
         )}
+
+        {/* 辅助操作：恢复血量 */}
         {onHeal && player.reveals && player.reveals.length > 0 && (
           <button
             onClick={handleHeal}
@@ -158,12 +172,6 @@ const PlayerCard = ({ player, onClick, showCharacterImage = false, onToggleRevea
             💚 恢复血量
           </button>
         )}
-        <button
-          onClick={onClick}
-          className="w-full py-1 px-2 bg-blue-600 hover:bg-blue-700 rounded text-sm"
-        >
-          查看身份
-        </button>
       </div>
     </div>
   )

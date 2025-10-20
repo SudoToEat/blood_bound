@@ -9,6 +9,8 @@ import TestPage from './components/TestPage'
 import CharacterDemo from './components/CharacterDemo'
 import PlayerAccessDebug from './components/PlayerAccessDebug'
 import { GameProvider, useGame } from './context/GameContext'
+import ErrorBoundary from './components/ErrorBoundary'
+import ConnectionStatusBar from './components/ConnectionStatusBar'
 
 // 主路由组件
 function AppRoutes() {
@@ -141,19 +143,22 @@ function MainApp() {
 // 应用入口
 function App() {
   return (
-    <GameProvider>
-      <Router>
-        <Routes>
-          <Route path="/" element={<AppRoutes />} />
-          <Route path="/access/:roomId/:playerId" element={<PlayerAccess />} />
-          <Route path="/debug/:roomId/:playerId" element={<PlayerAccessDebug />} />
-          <Route path="/game" element={<GameBoard onBackToSetup={() => {}} />} />
-          <Route path="/test" element={<TestPage />} />
-          <Route path="/demo" element={<CharacterDemo />} />
-          <Route path="*" element={<AppRoutes />} />
-        </Routes>
-      </Router>
-    </GameProvider>
+    <ErrorBoundary>
+      <GameProvider>
+        <ConnectionStatusBar />
+        <Router>
+          <Routes>
+            <Route path="/" element={<AppRoutes />} />
+            <Route path="/access/:roomId/:playerId" element={<PlayerAccess />} />
+            <Route path="/debug/:roomId/:playerId" element={<PlayerAccessDebug />} />
+            <Route path="/game" element={<GameBoard onBackToSetup={() => {}} />} />
+            <Route path="/test" element={<TestPage />} />
+            <Route path="/demo" element={<CharacterDemo />} />
+            <Route path="*" element={<AppRoutes />} />
+          </Routes>
+        </Router>
+      </GameProvider>
+    </ErrorBoundary>
   )
 }
 
