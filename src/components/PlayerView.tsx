@@ -44,17 +44,48 @@ const PlayerView = ({ player, allPlayers, onBack, hideBackButton = false, isPlay
     sendPlayerAction('addReveal', { revealType });
   };
 
-  // 处理诅咒卡使用
-  const handleUseCurse = (targetFaction: 'phoenix' | 'gargoyle') => {
-    if (player.curseUsed) {
-      alert('诅咒卡已经使用过了');
+  // 处理诅咒卡分配
+  const [curseAllocations, setCurseAllocations] = useState<Record<number, 'real' | 'fake' | null>>({});
+
+  // 获取可用的诅咒卡数量
+  const getCurseCardCounts = () => {
+    const playerCount = allPlayers?.length || 0;
+    if (playerCount === 7) return { real: 1, fake: 1 };
+    if (playerCount === 9) return { real: 1, fake: 2 };
+    if (playerCount === 11) return { real: 1, fake: 3 };
+    return { real: 0, fake: 0 };
+  };
+
+  // 计算已分配的诅咒卡数量
+  const getAllocatedCounts = () => {
+    const counts = { real: 0, fake: 0 };
+    Object.values(curseAllocations).forEach(curse => {
+      if (curse === 'real') counts.real++;
+      if (curse === 'fake') counts.fake++;
+    });
+    return counts;
+  };
+
+  const handleCurseAllocation = (targetPlayerId: number, curseType: 'real' | 'fake' | null) => {
+    setCurseAllocations(prev => ({
+      ...prev,
+      [targetPlayerId]: curseType
+    }));
+  };
+
+  const handleConfirmCurseDistribution = () => {
+    const availableCounts = getCurseCardCounts();
+    const allocatedCounts = getAllocatedCounts();
+
+    // 验证分配数量
+    if (allocatedCounts.real !== availableCounts.real || allocatedCounts.fake !== availableCounts.fake) {
+      alert(`必须分配完所有诅咒卡！\n真诅咒：${allocatedCounts.real}/${availableCounts.real}\n假诅咒：${allocatedCounts.fake}/${availableCounts.fake}`);
       return;
     }
 
-    const factionName = targetFaction === 'phoenix' ? '红队(凤凰氏族)' : '蓝队(石像鬼氏族)';
-    if (confirm(`确定要把真诅咒给${factionName}吗？此操作整局游戏只能执行一次！`)) {
-      console.log(`调查官 ${player.id} 使用诅咒卡，目标: ${targetFaction}`);
-      sendPlayerAction('useCurse', { targetFaction });
+    if (confirm('确定要分配这些诅咒卡吗？此操作整局游戏只能执行一次！')) {
+      console.log(`审判官 ${player.id} 分配诅咒卡:`, curseAllocations);
+      sendPlayerAction('distributeCurses', { allocations: curseAllocations });
     }
   };
 
@@ -293,35 +324,76 @@ const PlayerView = ({ player, allPlayers, onBack, hideBackButton = false, isPlay
             点击按钮向主持人展示线索
           </p>
 
-          {/* 调查官诅咒卡按钮 */}
+          {/* 审判官诅咒卡分配 */}
           {player.characterType === CharacterType.Inquisitor && (
             <div className="mt-6 pt-4 border-t border-gray-600">
-              <h4 className="font-bold mb-3 text-yellow-400 text-center">
-                诅咒卡 {player.curseUsed ? '(已使用)' : '(可用)'}
+              <h4 className="font-bold mb-2 text-yellow-400 text-center">
+                诅咒卡分配 {player.curseDistributed ? '(已分配)' : '(可用)'}
               </h4>
-              <div className="grid grid-cols-2 gap-3">
-                <button
-                  onClick={() => handleUseCurse('phoenix')}
-                  disabled={!!player.curseUsed}
-                  className="py-3 bg-red-600 text-white font-bold rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 disabled:bg-gray-500 disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                  把真诅咒给红队
-                </button>
-                <button
-                  onClick={() => handleUseCurse('gargoyle')}
-                  disabled={!!player.curseUsed}
-                  className="py-3 bg-blue-600 text-white font-bold rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:bg-gray-500 disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                  把真诅咒给蓝队
-                </button>
-              </div>
-              {player.curseUsed && (
-                <p className="text-center text-sm text-yellow-400 mt-2">
-                  已将真诅咒给{player.curseUsed === 'phoenix' ? '红队(凤凰氏族)' : '蓝队(石像鬼氏族)'}
+
+              {!player.curseDistributed ? (
+                <>
+                  <div className="text-xs text-center text-gray-400 mb-3">
+                    可用诅咒：真诅咒 {getAllocatedCounts().real}/{getCurseCardCounts().real} | 假诅咒 {getAllocatedCounts().fake}/{getCurseCardCounts().fake}
+                  </div>
+
+                  <div className="space-y-2 max-h-64 overflow-y-auto">
+                    {allPlayers?.filter(p => p.id !== player.id).map(targetPlayer => (
+                      <div key={targetPlayer.id} className="bg-gray-700 p-2 rounded flex items-center justify-between">
+                        <span className="text-sm">{targetPlayer.name || `玩家 ${targetPlayer.id}`}</span>
+                        <div className="flex gap-1">
+                          <button
+                            onClick={() => handleCurseAllocation(targetPlayer.id, null)}
+                            className={`px-2 py-1 text-xs rounded ${
+                              !curseAllocations[targetPlayer.id]
+                                ? 'bg-gray-600 text-white'
+                                : 'bg-gray-800 text-gray-400 hover:bg-gray-600'
+                            }`}
+                          >
+                            不给
+                          </button>
+                          <button
+                            onClick={() => handleCurseAllocation(targetPlayer.id, 'fake')}
+                            disabled={curseAllocations[targetPlayer.id] !== 'fake' && getAllocatedCounts().fake >= getCurseCardCounts().fake}
+                            className={`px-2 py-1 text-xs rounded ${
+                              curseAllocations[targetPlayer.id] === 'fake'
+                                ? 'bg-purple-600 text-white'
+                                : 'bg-gray-800 text-gray-400 hover:bg-purple-600 disabled:opacity-30 disabled:cursor-not-allowed'
+                            }`}
+                          >
+                            假诅咒
+                          </button>
+                          <button
+                            onClick={() => handleCurseAllocation(targetPlayer.id, 'real')}
+                            disabled={curseAllocations[targetPlayer.id] !== 'real' && getAllocatedCounts().real >= getCurseCardCounts().real}
+                            className={`px-2 py-1 text-xs rounded ${
+                              curseAllocations[targetPlayer.id] === 'real'
+                                ? 'bg-orange-600 text-white'
+                                : 'bg-gray-800 text-gray-400 hover:bg-orange-600 disabled:opacity-30 disabled:cursor-not-allowed'
+                            }`}
+                          >
+                            真诅咒
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  <button
+                    onClick={handleConfirmCurseDistribution}
+                    className="w-full mt-3 py-2 bg-yellow-600 hover:bg-yellow-700 text-white font-bold rounded-md"
+                  >
+                    确认分配诅咒卡
+                  </button>
+                </>
+              ) : (
+                <p className="text-center text-sm text-green-400 mt-2">
+                  诅咒卡已分配完成
                 </p>
               )}
+
               <p className="text-center text-xs text-gray-500 mt-2">
-                整局游戏只能使用一次
+                整局游戏只能分配一次
               </p>
             </div>
           )}

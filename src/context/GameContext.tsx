@@ -295,15 +295,16 @@ export function GameProvider({ children }: { children: ReactNode }) {
       socketService.onPlayerStatusChanged((data) => {
         console.log('玩家状态变化:', data);
         // 更新玩家在线状态
-        if (room) {
-          const player = room.playerIdentities?.find(p => p.id === data.playerId);
-          if (player) {
-            player.isOnline = data.isOnline;
-            player.lastSeen = Date.now();
+        if (state.gameData && state.gameData.players) {
+          const updatedPlayers = state.gameData.players.map((p: any) =>
+            p.id === data.playerId ? { ...p, isOnline: data.isOnline, lastSeen: Date.now() } : p
+          );
 
-            // 触发状态更新
-            dispatch({ type: 'UPDATE_GAME_DATA', payload: state.gameData });
-          }
+          // 触发状态更新
+          dispatch({
+            type: 'UPDATE_GAME_DATA',
+            payload: { ...state.gameData, players: updatedPlayers }
+          });
         }
       })
 

@@ -144,7 +144,8 @@ function generatePlayers(count) {
       reveals: [], // 初始化展示数组
       isOnline: false, // 在线状态
       lastSeen: null, // 最后在线时间
-      curseUsed: null // 调查官诅咒卡使用状态
+      hasCurse: null, // 玩家持有的诅咒卡类型
+      curseDistributed: false // 审判官是否已分配诅咒卡
     });
   }
 
@@ -439,42 +440,81 @@ io.on('connection', (socket) => {
       }
     }
 
-    // 处理调查官使用诅咒卡
-    if (action === 'useCurse') {
+    // 处理审判官分配诅咒卡
+    if (action === 'distributeCurses') {
       const playerIdentity = room.playerIdentities.find(p => p.id === playerId);
-      if (playerIdentity && playerIdentity.characterType === 10) { // 10 是调查官
-        // 检查是否已经使用过诅咒卡
-        if (playerIdentity.curseUsed) {
-          console.log(`⚠️ 玩家 ${playerId} (调查官) 尝试再次使用诅咒卡，但已经使用过`);
-          socket.emit('error', { message: '诅咒卡已经使用过了' });
+      if (playerIdentity && playerIdentity.characterType === 10) { // 10 是审判官
+        // 检查是否已经分配过诅咒卡
+        if (playerIdentity.curseDistributed) {
+          console.log(`⚠️ 玩家 ${playerId} (审判官) 尝试再次分配诅咒卡，但已经分配过`);
+          socket.emit('error', { message: '诅咒卡已经分配过了' });
           return;
         }
 
-        // 记录诅咒卡使用
-        playerIdentity.curseUsed = data.targetFaction; // 'phoenix' 或 'gargoyle'
+        // 验证分配数据
+        const allocations = data.allocations; // { playerId: 'real' | 'fake' | null }
+        const playerCount = room.playerIdentities.length;
+
+        // 获取应有的诅咒卡数量
+        let expectedReal = 0, expectedFake = 0;
+        if (playerCount === 7) { expectedReal = 1; expectedFake = 1; }
+        else if (playerCount === 9) { expectedReal = 1; expectedFake = 2; }
+        else if (playerCount === 11) { expectedReal = 1; expectedFake = 3; }
+
+        // 统计实际分配的数量
+        let actualReal = 0, actualFake = 0;
+        Object.values(allocations).forEach(curse => {
+          if (curse === 'real') actualReal++;
+          if (curse === 'fake') actualFake++;
+        });
+
+        // 验证数量是否正确
+        if (actualReal !== expectedReal || actualFake !== expectedFake) {
+          console.log(`⚠️ 审判官诅咒卡分配数量不正确: 期望${expectedReal}真${expectedFake}假，实际${actualReal}真${actualFake}假`);
+          socket.emit('error', { message: '诅咒卡分配数量不正确' });
+          return;
+        }
+
+        // 应用诅咒卡分配
+        Object.entries(allocations).forEach(([targetId, curseType]) => {
+          const targetPlayer = room.playerIdentities.find(p => p.id === parseInt(targetId));
+          if (targetPlayer && curseType) {
+            targetPlayer.hasCurse = curseType;
+          }
+        });
+
+        // 标记审判官已分配诅咒卡
+        playerIdentity.curseDistributed = true;
         room.lastActivity = Date.now();
 
-        console.log(`✨ 调查官 ${playerId} 使用诅咒卡，目标: ${data.targetFaction === 'phoenix' ? '红队(凤凰氏族)' : '蓝队(石像鬼氏族)'}`);
+        console.log(`✨ 审判官 ${playerId} 分配诅咒卡完成`);
 
         // 更新 room.gameState.players 以保持同步
         if (room.gameState && room.gameState.players) {
-          const gameStatePlayer = room.gameState.players.find(p => p.id === playerId);
-          if (gameStatePlayer) {
-            gameStatePlayer.curseUsed = data.targetFaction;
+          Object.entries(allocations).forEach(([targetId, curseType]) => {
+            const gameStatePlayer = room.gameState.players.find(p => p.id === parseInt(targetId));
+            if (gameStatePlayer && curseType) {
+              gameStatePlayer.hasCurse = curseType;
+            }
+          });
+
+          const inquisitor = room.gameState.players.find(p => p.id === playerId);
+          if (inquisitor) {
+            inquisitor.curseDistributed = true;
           }
         }
 
-        // 广播更新后的游戏状态给所有客户端
+        // 广播更新后的游戏状态给所有客户端（但不显示诅咒卡内容）
         io.to(roomId).emit('gameStateUpdated', {
           phase: room.gameState.phase,
           players: room.playerIdentities
         });
 
-        // 发送特殊通知给主持人
-        io.to(roomId).emit('curseUsed', {
-          playerId,
-          playerName: playerIdentity.name || `玩家 ${playerId}`,
-          targetFaction: data.targetFaction
+        // 只给主持人发送完整的诅咒卡信息
+        io.to(roomId).emit('curseDistributed', {
+          inquisitorId: playerId,
+          inquisitorName: playerIdentity.name || `玩家 ${playerId}`,
+          allocations
         });
       }
     }
