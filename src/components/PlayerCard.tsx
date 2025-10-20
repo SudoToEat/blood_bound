@@ -1,6 +1,7 @@
 import { Player } from '../types/gameTypes'
 import { getCharacterImage } from '../assets/characters'
 import { getCharacterName, getFactionName, getFactionColor } from '../utils/gameUtils'
+import { useState } from 'react'
 
 interface PlayerCardProps {
   player: Player
@@ -12,6 +13,7 @@ interface PlayerCardProps {
 }
 
 const PlayerCard = ({ player, onClick, showCharacterImage = false, onToggleReveal, onHeal, showOnlineStatus = false }: PlayerCardProps) => {
+  const [showCurseDetail, setShowCurseDetail] = useState(false)
   const characterImage = getCharacterImage(player.characterType)
   const characterName = getCharacterName(player.characterType)
   const factionName = getFactionName(player.faction)
@@ -69,7 +71,18 @@ const PlayerCard = ({ player, onClick, showCharacterImage = false, onToggleRevea
       )}
 
       <div className={`flex justify-between items-center mb-2 ${showOnlineStatus ? 'pr-4' : ''}`}>
-        <h3 className="text-lg font-bold">{player.name || `玩家 ${player.id}`}</h3>
+        <div className="flex items-center gap-2">
+          <h3 className="text-lg font-bold">{player.name || `玩家 ${player.id}`}</h3>
+          {/* 诅咒卡状态指示器 */}
+          {player.hasCurse && (
+            <div
+              className="px-2 py-0.5 rounded text-xs font-bold bg-orange-600 text-white"
+              title="持有诅咒卡"
+            >
+              被诅咒
+            </div>
+          )}
+        </div>
         <div className="flex gap-1">
           {Array.from({ length: 3 }).map((_, index) => {
             const reveal = player.reveals?.[index]
@@ -170,6 +183,27 @@ const PlayerCard = ({ player, onClick, showCharacterImage = false, onToggleRevea
             className="w-full py-1 px-2 bg-purple-600 hover:bg-purple-700 rounded text-sm transition-colors"
           >
             💚 恢复血量
+          </button>
+        )}
+
+        {/* 诅咒卡详情切换按钮 */}
+        {player.hasCurse && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation()
+              setShowCurseDetail(!showCurseDetail)
+            }}
+            className={`w-full py-1 px-2 rounded text-sm transition-colors ${
+              showCurseDetail
+                ? player.hasCurse === 'real'
+                  ? 'bg-orange-600 hover:bg-orange-700'
+                  : 'bg-purple-600 hover:bg-purple-700'
+                : 'bg-orange-500 hover:bg-orange-600'
+            }`}
+          >
+            {showCurseDetail
+              ? player.hasCurse === 'real' ? '⚠️ 真诅咒' : '✨ 假诅咒'
+              : '🔓 显示诅咒'}
           </button>
         )}
       </div>
