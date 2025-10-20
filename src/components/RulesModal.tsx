@@ -56,27 +56,65 @@ const RulesModal = ({ onClose }: RulesModalProps) => {
             <div>
               <h3 className="text-xl font-bold mb-4">游戏简介</h3>
               <p className="mb-4">
-                血契獵殺(Blood Bound)是一款陣營推理類桌遊。玩家会分成两大陣營(也有第三个陣營)，目标是找出并殺掉对方陣營的族长(等级数字最小的角色是族长)。
+                鲜血盟约(Blood Bound)是一款阵营推理类桌游。玩家会分成两大阵营（凤凰氏族和石像鬼氏族），游戏目标是通过攻击玩家来找出阵营和等级信息，并刺杀真正的族长（等级数字最小）来达成胜利。
               </p>
               <p className="mb-4">
-                在游戏过程中，玩家的身份是秘密，只能透过攻击彼此，来揭露对方的陣營和等级线索。线索出来后就要尽快推理找出目标，然后殺掉对手的族长。
+                在游戏过程中，玩家的身份是秘密，只能透过攻击彼此来揭露对方的阵营和等级线索。
               </p>
-              
+
               <h3 className="text-xl font-bold mb-4 mt-6">游戏流程</h3>
+              <p className="mb-2">拿到匕首的玩家可以从【攻击】和【跳过】两种行动中选择做一个。流程如下：</p>
               <ol className="list-decimal pl-6 space-y-2">
-                <li>玩家会被随机分配角色和阵营，每人只能看到自己的身份。</li>
-                <li>游戏开始时，随机选择一名玩家获得匕首。</li>
-                <li>持有匕首的玩家必须攻击另一名玩家，被攻击的玩家受到一点伤害。</li>
-                <li>被攻击的玩家需要展示一个线索（阵营或等级），然后可以发动自己的角色能力。</li>
-                <li>攻击完成后，匕首传递给被攻击的玩家，由他继续攻击下一名玩家。</li>
-                <li>当一名玩家认为已经找到对方阵营的族长时，可以宣布「血契」并指认一名玩家。</li>
-                <li>如果指认正确（指认的玩家是对方阵营的族长），则指认者所在阵营获胜；如果指认错误，则对方阵营获胜。</li>
+                <li>宣告【攻击】目标，或【跳过】</li>
+                <li>其他玩家请求【干涉】</li>
+                <li>被攻击玩家选择（不）接受玩家干涉</li>
+                <li>玩家【受伤】（干涉的玩家受伤必须拿等级指示物）</li>
+                <li>受伤玩家选择拿等级指示物时必须使用能力</li>
+                <li>将匕首给受伤的玩家</li>
               </ol>
-              
-              <h3 className="text-xl font-bold mb-4 mt-6">干涉规则</h3>
-              <p className="mb-4">
-                当一名玩家被攻击时，其他玩家可以选择「干涉」，替被攻击的玩家承受伤害。干涉的玩家会受到一点伤害并获得匕首，然后可以发动自己的角色能力。
-              </p>
+
+              <h3 className="text-xl font-bold mb-4 mt-6">专有名词解释</h3>
+
+              <div className="space-y-4">
+                <div className="bg-gray-700 p-3 rounded">
+                  <h4 className="font-bold mb-2 text-red-400">【攻击】</h4>
+                  <p className="text-sm">攻击一位玩家，并将匕首给受伤的玩家。</p>
+                </div>
+
+                <div className="bg-gray-700 p-3 rounded">
+                  <h4 className="font-bold mb-2 text-blue-400">【干涉】</h4>
+                  <p className="text-sm mb-2">当有玩家要被攻击时，其他玩家可以跳出来发动干涉（挡刀的意思），被指定攻击的玩家如果同意干涉，就会变成发动干涉的玩家受伤，原本被指定攻击的玩家没事。</p>
+                  <ul className="text-sm list-disc pl-5 space-y-1">
+                    <li>如果有两位玩家跳出来干涉，被指定攻击的玩家选择一位，或是都拒绝。</li>
+                    <li>只有还没拿等级指示物的玩家可以发动干涉，因为干涉而受伤的玩家，必须拿取等级指示物。</li>
+                    <li>干涉可能是为了保护同阵营的人，或是为了策略抢匕首。</li>
+                  </ul>
+                </div>
+
+                <div className="bg-gray-700 p-3 rounded">
+                  <h4 className="font-bold mb-2 text-yellow-400">【受伤】</h4>
+                  <p className="text-sm mb-2">当玩家被攻击受伤时，就必须拿一个阵营指示物或等级指示物。看自己角色卡右上方的符号，只能从三个中拿一个对应的指示物。</p>
+                  <ul className="text-sm list-disc pl-5 space-y-1">
+                    <li>当玩家选择拿等级指示物时，玩家就可以发动自己的能力。</li>
+                    <li>每次受伤都只扣一滴血。当有一位玩家被扣四滴血时就死亡，游戏立刻结束。</li>
+                  </ul>
+                </div>
+
+                <div className="bg-gray-700 p-3 rounded">
+                  <h4 className="font-bold mb-2 text-green-400">【跳过】</h4>
+                  <p className="text-sm">玩家可以选择不攻击，直接把匕首给任意一位玩家。</p>
+                </div>
+              </div>
+
+              <h3 className="text-xl font-bold mb-4 mt-6">游戏结束</h3>
+              <div className="space-y-2 text-sm">
+                <p>当有一位玩家被扣四滴血时就死亡，游戏立刻结束，所有玩家翻开角色卡。</p>
+                <ul className="list-disc pl-5 space-y-1">
+                  <li>如果死亡的是氏族族长（等级数字最小），敌对阵营获胜。</li>
+                  <li>如果不是，代表杀错人，死亡玩家阵营获胜。</li>
+                  <li>如果有调查官角色，则进入诅咒卡判定：如果调查官把真诅咒卡给到赢得胜利的氏族族长，则调查官单独获得胜利。</li>
+                </ul>
+              </div>
             </div>
           )}
 
