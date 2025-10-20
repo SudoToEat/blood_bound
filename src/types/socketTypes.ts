@@ -141,12 +141,10 @@ export type PlayerActionEventCallback = (data: PlayerActionEventData) => void
 
 // ============ 连接状态类型 ============
 
-export enum ConnectionStatus {
-  DISCONNECTED = 'disconnected',
-  CONNECTING = 'connecting',
-  CONNECTED = 'connected',
-  RECONNECTING = 'reconnecting',
-  ERROR = 'error'
-}
+/**
+ * 连接状态（使用字符串字面量类型，不使用枚举）
+ * 这样可以直接比较字符串，避免枚举类型比较问题
+ */
+export type ConnectionStatus = 'disconnected' | 'connecting' | 'connected' | 'reconnecting' | 'error'
 
 export type ConnectionStatusCallback = (status: ConnectionStatus, message?: string) => void

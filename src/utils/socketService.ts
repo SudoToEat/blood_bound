@@ -16,8 +16,8 @@ import type {
   GameStatePayload,
 } from '../types/socketTypes';
 
-// 导出 ConnectionStatus 枚举供外部使用
-export { ConnectionStatus } from '../types/socketTypes';
+// 导出 ConnectionStatus 类型供外部使用
+export type { ConnectionStatus } from '../types/socketTypes';
 
 class SocketService {
   private socket: Socket | null = null;
