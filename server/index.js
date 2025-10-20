@@ -282,13 +282,16 @@ io.on('connection', (socket) => {
     socket.join(roomId);
     playerSessions.set(socket.id, { roomId, playerId });
 
-    // 如果房间里没有该玩家，添加到已加入列表
-    if (!room.players.find(p => p.id === playerId)) {
-      room.players.push({ id: playerId, socketId: socket.id });
-    } else {
-      // 如果已存在但没有socketId，补充
-      const p = room.players.find(p => p.id === playerId);
-      if (p && !p.socketId) p.socketId = socket.id;
+    // 如果是主机(playerId === 0)，不加入到玩家列表中
+    if (playerId !== 0) {
+      // 如果房间里没有该玩家，添加到已加入列表
+      if (!room.players.find(p => p.id === playerId)) {
+        room.players.push({ id: playerId, socketId: socket.id });
+      } else {
+        // 如果已存在但没有socketId，补充
+        const p = room.players.find(p => p.id === playerId);
+        if (p && !p.socketId) p.socketId = socket.id;
+      }
     }
 
     // 获取该玩家的完整身份信息
@@ -305,20 +308,24 @@ io.on('connection', (socket) => {
       }
     };
 
-    console.log(`=== 发送给玩家 ${playerId} 的房间状态 ===`);
+    console.log(`=== 发送给${playerId === 0 ? '主机' : '玩家 ' + playerId} 的房间状态 ===`);
     console.log('roomStateData:', JSON.stringify(roomStateData, null, 2));
 
     // 发送房间状态（包含所有玩家身份）
     socket.emit('roomState', roomStateData);
 
-    // 通知其他玩家有新玩家加入
-    socket.to(roomId).emit('playerJoined', {
-      playerId,
-      players: room.players.map(p => p.id)
-    });
-
-    console.log(`玩家 ${playerId} 加入房间 ${roomId}`);
-    console.log(`玩家身份:`, playerIdentity);
+    // 只有非主机玩家加入时才通知其他人
+    if (playerId !== 0) {
+      // 通知其他玩家有新玩家加入
+      socket.to(roomId).emit('playerJoined', {
+        playerId,
+        players: room.players.map(p => p.id)
+      });
+      console.log(`玩家 ${playerId} 加入房间 ${roomId}`);
+      console.log(`玩家身份:`, playerIdentity);
+    } else {
+      console.log(`主机连接到房间 ${roomId}`);
+    }
     console.log(`当前已加入玩家: ${room.players.map(p => p.id).join(', ')}`);
   });
   
