@@ -1,8 +1,7 @@
 import { Player } from '../types/gameTypes'
 import { getCharacterImage } from '../assets/characters'
 import { getCharacterName, getFactionName, getFactionColor } from '../utils/gameUtils'
-import { useState } from 'react'
-import { logger } from '../utils/logger'
+import { useState, useCallback, useMemo, memo } from 'react'
 
 interface PlayerCardProps {
   player: Player
@@ -14,33 +13,43 @@ interface PlayerCardProps {
   forceShowCurse?: boolean // 强制显示诅咒信息（用于揭示所有身份）
 }
 
-const PlayerCard = ({ player, onClick, showCharacterImage = false, onToggleReveal, onHeal, showOnlineStatus = false, forceShowCurse = false }: PlayerCardProps) => {
+const PlayerCard = memo(({ player, onClick, showCharacterImage = false, onToggleReveal, onHeal, showOnlineStatus = false, forceShowCurse = false }: PlayerCardProps) => {
   const [showCurseDetail, setShowCurseDetail] = useState(false)
+
+  // 使用 useMemo 缓存计算结果
+  const characterInfo = useMemo(() => ({
+    image: getCharacterImage(player.characterType),
+    name: getCharacterName(player.characterType),
+    factionName: getFactionName(player.faction),
+    factionColor: getFactionColor(player.faction),
+  }), [player.characterType, player.faction])
+
+  // 判断是否已揭示身份（阵营或等级任一已揭示）
+  const isRevealed = useMemo(() =>
+    player.revealedFaction || player.revealedRank,
+    [player.revealedFaction, player.revealedRank]
+  )
 
   // 当forceShowCurse为true时，自动展开诅咒详情
   const shouldShowCurse = forceShowCurse || showCurseDetail
-  const characterImage = getCharacterImage(player.characterType)
-  const characterName = getCharacterName(player.characterType)
-  const factionName = getFactionName(player.faction)
-  const factionColor = getFactionColor(player.faction)
 
-  // 判断是否已揭示身份（阵营或等级任一已揭示）
-  const isRevealed = player.revealedFaction || player.revealedRank
-
-  // 调试：输出玩家信息
-  logger.log(`PlayerCard ${player.id}: name="${player.name}", characterName="${characterName}"`);
-
-  // 处理揭示按钮点击，阻止事件冒泡
-  const handleToggleReveal = (e: React.MouseEvent) => {
+  // 使用 useCallback 优化回调函数
+  const handleToggleReveal = useCallback((e: React.MouseEvent) => {
     e.stopPropagation()
     onToggleReveal?.()
-  }
+  }, [onToggleReveal])
 
-  // 处理恢复血量按钮点击，阻止事件冒泡
-  const handleHeal = (e: React.MouseEvent) => {
+  const handleHeal = useCallback((e: React.MouseEvent) => {
     e.stopPropagation()
     onHeal?.()
-  }
+  }, [onHeal])
+
+  const handleToggleCurseDetail = useCallback((e: React.MouseEvent) => {
+    e.stopPropagation()
+    if (!forceShowCurse) {
+      setShowCurseDetail(prev => !prev)
+    }
+  }, [forceShowCurse])
 
   // 获取展示指示器的颜色
   const getRevealColor = (reveal: 'red' | 'blue' | 'unknown' | undefined) => {
@@ -110,8 +119,8 @@ const PlayerCard = ({ player, onClick, showCharacterImage = false, onToggleRevea
           <div className="relative">
             <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-gray-300">
               <img
-                src={characterImage}
-                alt={characterName}
+                src={characterInfo.image}
+                alt={characterInfo.name}
                 className="w-full h-full object-cover"
                 onError={(e) => {
                   const target = e.target as HTMLImageElement
@@ -122,16 +131,16 @@ const PlayerCard = ({ player, onClick, showCharacterImage = false, onToggleRevea
             {/* 角色名称标签 */}
             <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2">
               <span className="bg-gray-700 text-white text-xs px-2 py-1 rounded-full">
-                {characterName}
+                {characterInfo.name}
               </span>
             </div>
           </div>
         </div>
       )}
-      
+
       <div className="text-sm text-gray-400">
-        <div className={`${player.revealedFaction ? factionColor : ''} font-semibold mb-1`}>
-          阵营: {player.revealedFaction ? factionName : '未揭示'}
+        <div className={`${player.revealedFaction ? characterInfo.factionColor : ''} font-semibold mb-1`}>
+          阵营: {player.revealedFaction ? characterInfo.factionName : '未揭示'}
         </div>
 
         <div className="font-semibold">
@@ -139,10 +148,10 @@ const PlayerCard = ({ player, onClick, showCharacterImage = false, onToggleRevea
         </div>
 
         {/* 如果阵营或等级已揭示，显示角色 */}
-        {(player.revealedFaction || player.revealedRank) && (
+        {isRevealed && (
           <div className="mt-2 text-xs">
             <div className="text-yellow-400">
-              角色: {characterName}
+              角色: {characterInfo.name}
             </div>
           </div>
         )}
@@ -194,12 +203,7 @@ const PlayerCard = ({ player, onClick, showCharacterImage = false, onToggleRevea
         {/* 诅咒卡详情切换按钮 */}
         {player.hasCurse && (
           <button
-            onClick={(e) => {
-              e.stopPropagation()
-              if (!forceShowCurse) {
-                setShowCurseDetail(!showCurseDetail)
-              }
-            }}
+            onClick={handleToggleCurseDetail}
             disabled={forceShowCurse}
             className={`w-full py-1 px-2 rounded text-sm transition-colors ${
               shouldShowCurse
@@ -217,6 +221,8 @@ const PlayerCard = ({ player, onClick, showCharacterImage = false, onToggleRevea
       </div>
     </div>
   )
-}
+})
+
+PlayerCard.displayName = 'PlayerCard'
 
 export default PlayerCard

@@ -1,4 +1,4 @@
-import React from 'react'
+import { memo, useState, useEffect, useCallback, useMemo } from 'react'
 import QRCode from 'qrcode'
 
 interface QRCodeDisplayProps {
@@ -7,35 +7,39 @@ interface QRCodeDisplayProps {
   description?: string
 }
 
-export const QRCodeDisplay: React.FC<QRCodeDisplayProps> = ({
+export const QRCodeDisplay = memo<QRCodeDisplayProps>(({
   url,
   title = '玩家访问二维码',
   description = '让玩家扫描二维码访问游戏'
 }) => {
-  const [qrCodeUrl, setQrCodeUrl] = React.useState<string>('')
-  const [copied, setCopied] = React.useState(false)
+  const [qrCodeUrl, setQrCodeUrl] = useState<string>('')
+  const [copied, setCopied] = useState(false)
+
+  // 使用 useMemo 缓存二维码配置
+  const qrConfig = useMemo(() => ({
+    width: 200,
+    margin: 2,
+    color: {
+      dark: '#000000',
+      light: '#FFFFFF'
+    }
+  }), [])
 
   // 生成二维码
-  React.useEffect(() => {
+  useEffect(() => {
     const generateQRCode = async () => {
       try {
-        const qrCodeDataUrl = await QRCode.toDataURL(url, {
-          width: 200,
-          margin: 2,
-          color: {
-            dark: '#000000',
-            light: '#FFFFFF'
-          }
-        })
+        const qrCodeDataUrl = await QRCode.toDataURL(url, qrConfig)
         setQrCodeUrl(qrCodeDataUrl)
       } catch (error) {
         console.error('生成二维码失败:', error)
       }
     }
     generateQRCode()
-  }, [url])
+  }, [url, qrConfig])
 
-  const copyToClipboard = async () => {
+  // 使用 useCallback 优化回调函数
+  const copyToClipboard = useCallback(async () => {
     try {
       await navigator.clipboard.writeText(url)
       setCopied(true)
@@ -43,11 +47,11 @@ export const QRCodeDisplay: React.FC<QRCodeDisplayProps> = ({
     } catch (err) {
       console.error('无法复制链接:', err)
     }
-  }
+  }, [url])
 
-  const openPlayerLink = () => {
+  const openPlayerLink = useCallback(() => {
     window.open(url, '_blank')
-  }
+  }, [url])
 
   return (
     <div className="flex flex-col items-center space-y-2">
@@ -79,4 +83,6 @@ export const QRCodeDisplay: React.FC<QRCodeDisplayProps> = ({
       </div>
     </div>
   )
-}
+})
+
+QRCodeDisplay.displayName = 'QRCodeDisplay'

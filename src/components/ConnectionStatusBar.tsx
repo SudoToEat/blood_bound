@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo, useCallback, memo } from 'react'
 import { socketService } from '../utils/socketService'
 import type { ConnectionStatus } from '../types/socketTypes'
 
@@ -6,7 +6,7 @@ interface ConnectionStatusBarProps {
   className?: string
 }
 
-const ConnectionStatusBar = ({ className = '' }: ConnectionStatusBarProps) => {
+const ConnectionStatusBar = memo(({ className = '' }: ConnectionStatusBarProps) => {
   const [status, setStatus] = useState<ConnectionStatus>('disconnected')
   const [message, setMessage] = useState<string>('')
   const [isVisible, setIsVisible] = useState(false)
@@ -38,8 +38,8 @@ const ConnectionStatusBar = ({ className = '' }: ConnectionStatusBarProps) => {
     }
   }, [])
 
-  // 根据状态返回样式
-  const getStatusStyle = () => {
+  // 使用 useMemo 缓存样式计算
+  const style = useMemo(() => {
     switch (status) {
       case 'connected':
         return {
@@ -73,9 +73,12 @@ const ConnectionStatusBar = ({ className = '' }: ConnectionStatusBarProps) => {
           text: '未连接'
         }
     }
-  }
+  }, [status])
 
-  const style = getStatusStyle()
+  // 使用 useCallback 优化刷新页面回调
+  const handleRefresh = useCallback(() => {
+    window.location.reload()
+  }, [])
 
   if (!isVisible) {
     return null
@@ -105,7 +108,7 @@ const ConnectionStatusBar = ({ className = '' }: ConnectionStatusBarProps) => {
         {/* 如果是错误状态，提供刷新按钮 */}
         {status === 'error' && (
           <button
-            onClick={() => window.location.reload()}
+            onClick={handleRefresh}
             className="ml-4 px-3 py-1 bg-white bg-opacity-20 hover:bg-opacity-30 rounded text-xs font-bold transition-colors"
           >
             刷新页面
@@ -114,6 +117,8 @@ const ConnectionStatusBar = ({ className = '' }: ConnectionStatusBarProps) => {
       </div>
     </div>
   )
-}
+})
+
+ConnectionStatusBar.displayName = 'ConnectionStatusBar'
 
 export default ConnectionStatusBar

@@ -1,4 +1,4 @@
-import React from 'react'
+import { memo, useMemo } from 'react'
 import { CharacterType, Faction } from '../types/gameTypes'
 import { getCharacterName, getCharacterAbilityDescription, getFactionName, getFactionColor } from '../utils/gameUtils'
 import { getCharacterImage, getCharacterBackground } from '../assets/characters'
@@ -11,36 +11,42 @@ interface CharacterCardProps {
   className?: string
 }
 
-export const CharacterCard: React.FC<CharacterCardProps> = ({
+export const CharacterCard = memo<CharacterCardProps>(({
   characterType,
   faction,
   isRevealed = false,
   showAbility = false,
   className = ''
 }) => {
-  const characterName = getCharacterName(characterType)
-  const factionName = getFactionName(faction)
-  const factionColor = getFactionColor(faction)
-  const abilityDescription = getCharacterAbilityDescription(characterType)
-  const characterImage = getCharacterImage(characterType)
-  const characterBg = getCharacterBackground(characterType)
+  // 使用 useMemo 缓存所有计算结果
+  const characterInfo = useMemo(() => ({
+    name: getCharacterName(characterType),
+    ability: getCharacterAbilityDescription(characterType),
+    image: getCharacterImage(characterType),
+    background: getCharacterBackground(characterType)
+  }), [characterType])
+
+  const factionInfo = useMemo(() => ({
+    name: getFactionName(faction),
+    color: getFactionColor(faction)
+  }), [faction])
 
   return (
     <div className={`relative overflow-hidden rounded-lg shadow-lg border-2 border-gray-300 ${className}`}>
       {/* 角色背景 */}
-      <div 
+      <div
         className="absolute inset-0 bg-cover bg-center opacity-20"
-        style={{ backgroundImage: `url(${characterBg})` }}
+        style={{ backgroundImage: `url(${characterInfo.background})` }}
       />
-      
+
       {/* 卡片内容 */}
       <div className="relative z-10 p-4 bg-white/90 backdrop-blur-sm">
         {/* 角色图片 */}
         <div className="flex justify-center mb-3">
           <div className="w-24 h-24 rounded-full overflow-hidden border-4 border-gray-200 shadow-md">
             <img
-              src={characterImage}
-              alt={characterName}
+              src={characterInfo.image}
+              alt={characterInfo.name}
               className="w-full h-full object-cover"
               onError={(e) => {
                 // 如果图片加载失败，显示默认图片
@@ -53,12 +59,12 @@ export const CharacterCard: React.FC<CharacterCardProps> = ({
 
         {/* 角色信息 */}
         <div className="text-center">
-          <h3 className="text-lg font-bold text-gray-800 mb-1">{characterName}</h3>
-          
+          <h3 className="text-lg font-bold text-gray-800 mb-1">{characterInfo.name}</h3>
+
           {isRevealed && (
             <div className="mb-2">
-              <span className={`text-sm font-medium ${factionColor}`}>
-                {factionName}
+              <span className={`text-sm font-medium ${factionInfo.color}`}>
+                {factionInfo.name}
               </span>
               <span className="text-sm text-gray-600 ml-2">
                 等级: {characterType}
@@ -70,7 +76,7 @@ export const CharacterCard: React.FC<CharacterCardProps> = ({
           {showAbility && (
             <div className="mt-3 p-2 bg-gray-50 rounded text-sm text-gray-700">
               <p className="font-medium mb-1">角色能力:</p>
-              <p className="text-xs leading-relaxed">{abilityDescription}</p>
+              <p className="text-xs leading-relaxed">{characterInfo.ability}</p>
             </div>
           )}
 
@@ -85,7 +91,7 @@ export const CharacterCard: React.FC<CharacterCardProps> = ({
 
       {/* 阵营标识角标 */}
       {isRevealed && (
-        <div className={`absolute top-2 right-2 w-6 h-6 rounded-full ${factionColor.replace('text-', 'bg-')} flex items-center justify-center`}>
+        <div className={`absolute top-2 right-2 w-6 h-6 rounded-full ${factionInfo.color.replace('text-', 'bg-')} flex items-center justify-center`}>
           <span className="text-white text-xs font-bold">
             {faction === Faction.Phoenix ? '鳳' : faction === Faction.Gargoyle ? '石' : '中'}
           </span>
@@ -93,6 +99,8 @@ export const CharacterCard: React.FC<CharacterCardProps> = ({
       )}
     </div>
   )
-}
+})
+
+CharacterCard.displayName = 'CharacterCard'
 
 export default CharacterCard 
