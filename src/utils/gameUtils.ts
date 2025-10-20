@@ -113,7 +113,7 @@ export function getCharacterAbilityDescription(characterType: CharacterType): st
     case CharacterType.Geisha: // 舞妓
       return '将折扇卡给任意一位玩家，有折扇卡的玩家，无法让其他玩家进行干涉。'
     case CharacterType.Inquisitor: // 调查官
-      return '调查官属于中立角色。调查官不可以攻击已经受伤三点的玩家。调查官受伤时，可以拿任意种类的阵营指示物。'
+      return '调查官属于中立角色。调查官不可以攻击已经受伤三点的玩家。调查官受伤时，可以拿任意种类的阵营指示物。如果调查官被杀掉，则调查官单独获得胜利。调查官可以使用诅咒卡，如果将真诅咒卡给最终获胜的氏族族长，调查官单独获得胜利。'
     default:
       return ''
   }

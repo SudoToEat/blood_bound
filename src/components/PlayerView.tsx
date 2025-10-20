@@ -219,7 +219,7 @@ const PlayerView = ({ player, allPlayers, onBack, hideBackButton = false, isPlay
               <li className="text-yellow-400 font-bold">特殊提示：作为弄臣，你向右边玩家展示的阵营线索与你的实际阵营相反！</li>
             )}
             {player.characterType === CharacterType.Inquisitor && (
-              <li className="text-yellow-400 font-bold">特殊提示：作为调查官，你是中立阵营，如果被杀或成功使用诅咒卡，你将单独获胜！</li>
+              <li className="text-yellow-400 font-bold">特殊提示：作为调查官，你是中立阵营，不可以攻击已经受伤三点的玩家。受伤时可以拿任意种类的阵营指示物。如果被杀掉或将真诅咒卡给最终获胜的氏族族长，你将单独获胜！</li>
             )}
           </ul>
         </div>

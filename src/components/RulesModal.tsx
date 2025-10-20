@@ -151,7 +151,7 @@ const RulesModal = ({ onClose }: RulesModalProps) => {
               </div>
               <div className="bg-gray-700 p-4 rounded-lg">
                 <h3 className="text-lg font-bold mb-2">诅咒</h3>
-                <p className="text-sm">调查官角色能力会使用诅咒卡。调查官将真诅咒卡给最终获胜的氏族族长时，变成调查官单独获得胜利。</p>
+                <p className="text-sm">调查官角色能力会使用诅咒卡。如果调查官将真诅咒卡给最终获胜的氏族族长，调查官单独获得胜利。</p>
               </div>
               <div className="bg-gray-700 p-4 rounded-lg">
                 <h3 className="text-lg font-bold mb-2">鹅毛笔</h3>
