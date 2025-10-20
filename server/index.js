@@ -66,12 +66,17 @@ function generatePlayers(count) {
   const useInquisitor = count % 2 !== 0;
 
   // 计算每个阵营的玩家数量
-  let phoenixCount = Math.floor(count / 2);
-  let gargoyleCount = Math.floor(count / 2);
+  let phoenixCount, gargoyleCount;
 
-  // 如果有中立角色，则减少一个阵营的人数
   if (useInquisitor) {
-    phoenixCount--;
+    // 如果有调查官，剩余玩家平均分配给两个阵营
+    const remainingCount = count - 1;
+    phoenixCount = Math.floor(remainingCount / 2);
+    gargoyleCount = remainingCount - phoenixCount;
+  } else {
+    // 如果没有调查官，直接平均分配
+    phoenixCount = count / 2;
+    gargoyleCount = count / 2;
   }
 
   // 角色池：1-9 的数字，每个阵营都可以使用
