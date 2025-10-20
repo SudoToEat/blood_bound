@@ -130,7 +130,7 @@ const RulesModal = ({ onClose }: RulesModalProps) => {
                         {getCharacterName(characterType)}
                       </h3>
                       <span className="px-2 py-1 rounded-full text-sm bg-red-800 text-red-200">
-                        鳳凰氏族
+                        凤凰氏族
                       </span>
                     </div>
                     <p className="text-sm">{getCharacterAbilityDescription(characterType)}</p>
