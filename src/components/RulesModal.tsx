@@ -134,8 +134,8 @@ const RulesModal = ({ onClose }: RulesModalProps) => {
           {activeTab === 'abilities' && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="bg-gray-700 p-4 rounded-lg">
-                <h3 className="text-lg font-bold mb-2">長劍</h3>
-                <p className="text-sm">衛士角色能力会获得长劍卡。</p>
+                <h3 className="text-lg font-bold mb-2">长剑</h3>
+                <p className="text-sm">卫士角色能力会获得长剑卡。</p>
               </div>
               <div className="bg-gray-700 p-4 rounded-lg">
                 <h3 className="text-lg font-bold mb-2">折扇</h3>
@@ -143,19 +143,19 @@ const RulesModal = ({ onClose }: RulesModalProps) => {
               </div>
               <div className="bg-gray-700 p-4 rounded-lg">
                 <h3 className="text-lg font-bold mb-2">法杖</h3>
-                <p className="text-sm">法師角色能力会给予自己和一名玩家法杖卡。有法杖卡的玩家拿陣營指示物时，只能拿未知陣營指示物。</p>
+                <p className="text-sm">法师角色能力会给予自己和一名玩家法杖卡。有法杖卡的玩家拿阵营指示物时，只能拿未知阵营指示物。</p>
               </div>
               <div className="bg-gray-700 p-4 rounded-lg">
                 <h3 className="text-lg font-bold mb-2">盾牌</h3>
-                <p className="text-sm">衛士角色能力会给予一名玩家盾牌卡。其他玩家无法攻击或用能力傷害有盾牌卡的玩家。</p>
+                <p className="text-sm">卫士角色能力会给予一名玩家盾牌卡。其他玩家无法攻击或用能力伤害有盾牌卡的玩家。</p>
               </div>
               <div className="bg-gray-700 p-4 rounded-lg">
-                <h3 className="text-lg font-bold mb-2">詛咒</h3>
-                <p className="text-sm">調查官角色能力会使用詛咒卡。調查官将真詛咒卡给最终获胜的氏族族长时，变成調查官单独获得胜利。</p>
+                <h3 className="text-lg font-bold mb-2">诅咒</h3>
+                <p className="text-sm">调查官角色能力会使用诅咒卡。调查官将真诅咒卡给最终获胜的氏族族长时，变成调查官单独获得胜利。</p>
               </div>
               <div className="bg-gray-700 p-4 rounded-lg">
-                <h3 className="text-lg font-bold mb-2">鵝毛筆</h3>
-                <p className="text-sm">长老角色能力会使用鵝毛筆能力，将数字最大的角色变成氏族族长。</p>
+                <h3 className="text-lg font-bold mb-2">鹅毛笔</h3>
+                <p className="text-sm">长老角色能力会使用鹅毛笔能力，将数字最大的角色变成氏族族长。</p>
               </div>
             </div>
           )}

@@ -21,17 +21,18 @@ export enum CharacterType {
 
 // 能力卡类型
 export enum AbilityCardType {
-  Sword = 'sword',     // 長劍
+  Sword = 'sword',     // 长剑
   Fan = 'fan',         // 折扇
   Staff = 'staff',     // 法杖
   Shield = 'shield',   // 盾牌
-  Curse = 'curse',     // 詛咒
-  Quill = 'quill'      // 鵝毛筆
+  Curse = 'curse',     // 诅咒
+  Quill = 'quill'      // 鹅毛笔
 }
 
 // 玩家状态
 export interface Player {
   id: number
+  name?: string // 玩家自定义姓名
   characterType: CharacterType
   faction: Faction
   rank: number

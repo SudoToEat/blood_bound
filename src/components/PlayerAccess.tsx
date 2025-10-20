@@ -114,11 +114,11 @@ export const PlayerAccess: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
-        <div className="max-w-md mx-auto p-6 bg-white rounded-lg shadow-lg text-center">
+      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
+        <div className="max-w-md mx-auto p-6 bg-gray-800 rounded-lg shadow-lg text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <h2 className="text-xl font-semibold text-gray-800 mb-2">正在加入房间...</h2>
-          <p className="text-gray-600">请稍候，正在连接到游戏服务器</p>
+          <h2 className="text-xl font-semibold text-white mb-2">正在加入房间...</h2>
+          <p className="text-gray-400">请稍候，正在连接到游戏服务器</p>
         </div>
       </div>
     );
@@ -126,12 +126,12 @@ export const PlayerAccess: React.FC = () => {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
-        <div className="max-w-md mx-auto p-6 bg-white rounded-lg shadow-lg">
+      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
+        <div className="max-w-md mx-auto p-6 bg-gray-800 rounded-lg shadow-lg">
           <div className="text-center mb-6">
             <div className="text-red-500 text-6xl mb-4">⚠️</div>
-            <h2 className="text-xl font-semibold text-gray-800 mb-2">无法加入房间</h2>
-            <p className="text-gray-600 mb-4">{error}</p>
+            <h2 className="text-xl font-semibold text-white mb-2">无法加入房间</h2>
+            <p className="text-gray-400 mb-4">{error}</p>
           </div>
 
           <div className="space-y-3">
@@ -151,10 +151,10 @@ export const PlayerAccess: React.FC = () => {
 
           {debugInfo && (
             <details className="mt-6">
-              <summary className="cursor-pointer text-sm text-gray-600 hover:text-gray-800">
+              <summary className="cursor-pointer text-sm text-gray-400 hover:text-gray-200">
                 调试信息
               </summary>
-              <div className="mt-2 p-3 bg-gray-50 rounded text-xs text-gray-700">
+              <div className="mt-2 p-3 bg-gray-700 rounded text-xs text-gray-300">
                 <pre>{JSON.stringify(debugInfo, null, 2)}</pre>
               </div>
             </details>
@@ -172,7 +172,7 @@ export const PlayerAccess: React.FC = () => {
       // 找到玩家身份，显示身份信息，并传递所有玩家数据
       console.log('渲染玩家身份视图');
       return (
-        <div className="min-h-screen bg-gray-100 flex items-center justify-center">
+        <div className="min-h-screen bg-gray-900 flex items-center justify-center p-4">
           <PlayerView
             player={playerObj}
             allPlayers={state.gameData.players}
@@ -193,47 +193,47 @@ export const PlayerAccess: React.FC = () => {
     console.log('state.playerId:', state.playerId);
 
     return (
-      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
-        <div className="max-w-md mx-auto p-6 bg-white rounded-lg shadow-lg">
+      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
+        <div className="max-w-md mx-auto p-6 bg-gray-800 rounded-lg shadow-lg">
           <div className="text-center mb-6">
             <div className="text-green-500 text-6xl mb-4">✅</div>
-            <h2 className="text-xl font-semibold text-gray-800 mb-2">成功加入房间！</h2>
-            <p className="text-gray-600">房间号: {state.roomId}</p>
-            <p className="text-gray-600">玩家ID: {state.playerId}</p>
+            <h2 className="text-xl font-semibold text-white mb-2">成功加入房间！</h2>
+            <p className="text-gray-400">房间号: {state.roomId}</p>
+            <p className="text-gray-400">玩家ID: {state.playerId}</p>
             <p className="text-sm text-gray-500 mt-2">游戏阶段: {state.gamePhase}</p>
           </div>
 
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-            <h3 className="font-semibold text-blue-800 mb-2">连接状态</h3>
+          <div className="bg-blue-900 border border-blue-700 rounded-lg p-4 mb-6">
+            <h3 className="font-semibold text-blue-300 mb-2">连接状态</h3>
             <div className="flex items-center space-x-2">
               <div className={`w-3 h-3 rounded-full ${state.isConnected ? 'bg-green-500' : 'bg-red-500'}`}></div>
-              <span className="text-sm text-blue-700">
+              <span className="text-sm text-blue-200">
                 {state.isConnected ? '已连接到服务器' : '连接中...'}
               </span>
             </div>
           </div>
 
-          <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-6">
-            <h3 className="font-semibold text-gray-800 mb-2">房间信息</h3>
-            <p className="text-sm text-gray-600">当前玩家数: {state.players.length}</p>
-            <p className="text-sm text-gray-600">总玩家数: {state.playerCount}</p>
+          <div className="bg-gray-700 border border-gray-600 rounded-lg p-4 mb-6">
+            <h3 className="font-semibold text-gray-200 mb-2">房间信息</h3>
+            <p className="text-sm text-gray-400">当前玩家数: {state.players.length}</p>
+            <p className="text-sm text-gray-400">总玩家数: {state.playerCount}</p>
             {state.players.length > 0 && (
-              <p className="text-sm text-gray-600">
+              <p className="text-sm text-gray-400">
                 已加入玩家: {state.players.join(', ')}
               </p>
             )}
           </div>
 
           {/* 调试信息 */}
-          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
-            <h3 className="font-semibold text-yellow-800 mb-2">调试信息</h3>
-            <p className="text-xs text-yellow-700">gameData 存在: {state.gameData ? '是' : '否'}</p>
+          <div className="bg-yellow-900 border border-yellow-700 rounded-lg p-4 mb-6">
+            <h3 className="font-semibold text-yellow-300 mb-2">调试信息</h3>
+            <p className="text-xs text-yellow-200">gameData 存在: {state.gameData ? '是' : '否'}</p>
             {state.gameData && (
               <>
-                <p className="text-xs text-yellow-700">
+                <p className="text-xs text-yellow-200">
                   gameData.players 数量: {state.gameData.players?.length || 0}
                 </p>
-                <p className="text-xs text-yellow-700">
+                <p className="text-xs text-yellow-200">
                   当前玩家身份: {state.gameData.players?.find((p: any) => p.id === state.playerId) ? '已找到' : '未找到'}
                 </p>
               </>
@@ -241,7 +241,7 @@ export const PlayerAccess: React.FC = () => {
           </div>
 
           <div className="text-center">
-            <p className="text-sm text-gray-600 mb-4">
+            <p className="text-sm text-gray-400 mb-4">
               等待游戏主持人开始游戏...
             </p>
             <button

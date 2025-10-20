@@ -70,6 +70,33 @@ const GameBoard = ({ onBackToSetup }: GameBoardProps) => {
     updateGameState(updatedGameData)
   }
 
+  // 恢复玩家血量（移除最后一个线索）
+  const handleHealPlayer = (playerId: number) => {
+    if (!state.gameData || !state.gameData.players) {
+      return
+    }
+
+    const updatedPlayers = state.gameData.players.map((player: Player) => {
+      if (player.id === playerId && player.reveals && player.reveals.length > 0) {
+        // 移除最后一个线索
+        const newReveals = [...player.reveals]
+        newReveals.pop()
+        return {
+          ...player,
+          reveals: newReveals
+        }
+      }
+      return player
+    })
+
+    const updatedGameData = {
+      ...state.gameData,
+      players: updatedPlayers,
+    }
+
+    updateGameState(updatedGameData)
+  }
+
   // 健壮性：无玩家对象时友好提示
   if (!playerObjects || playerObjects.length === 0) {
     return (
@@ -129,6 +156,7 @@ const GameBoard = ({ onBackToSetup }: GameBoardProps) => {
                 onClick={() => setSelectedPlayer(player)}
                 showCharacterImage={false}
                 onToggleReveal={() => handleToggleReveal(player.id)}
+                onHeal={() => handleHealPlayer(player.id)}
               />
             ))}
           </div>

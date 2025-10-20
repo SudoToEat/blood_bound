@@ -104,6 +104,7 @@ interface GameContextType {
   restartGame: () => Promise<void>
   updateGameState: (gameData: any) => void
   sendPlayerAction: (action: string, data?: any) => void
+  updatePlayerName: (name: string) => void
   resetGame: () => void
   checkServerHealth: () => Promise<boolean>
 }
@@ -339,6 +340,20 @@ export function GameProvider({ children }: { children: ReactNode }) {
     }
   }
 
+  // 更新玩家姓名
+  const updatePlayerName = (name: string) => {
+    console.log('updatePlayerName 被调用, 姓名:', name);
+    console.log('当前 state.roomId:', state.roomId);
+    console.log('当前 state.playerId:', state.playerId);
+
+    if (state.roomId && state.playerId) {
+      console.log(`✅ 发送更新姓名请求: 玩家 ${state.playerId} -> ${name}`);
+      socketService.sendPlayerAction(state.roomId, state.playerId, 'updateName', { name });
+    } else {
+      console.error('❌ 无法更新姓名: roomId 或 playerId 缺失');
+    }
+  }
+
   // 重置游戏
   const resetGame = () => {
     socketService.disconnect()
@@ -423,6 +438,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
     restartGame,
     updateGameState,
     sendPlayerAction,
+    updatePlayerName,
     resetGame,
     checkServerHealth,
   }

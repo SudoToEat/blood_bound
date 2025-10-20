@@ -353,11 +353,16 @@ io.on('connection', (socket) => {
   
   // 玩家操作
   socket.on('playerAction', ({ roomId, playerId, action, data }) => {
+    console.log(`收到玩家操作: roomId=${roomId}, playerId=${playerId}, action=${action}`);
+
     const room = rooms.get(roomId);
     if (!room) {
+      console.error(`❌ 房间不存在: ${roomId}`);
       socket.emit('error', { message: '房间不存在' });
       return;
     }
+
+    console.log(`✅ 找到房间: ${roomId}, 当前玩家数: ${room.players.length}`);
 
     // 处理展示线索动作
     if (action === 'addReveal') {
@@ -388,6 +393,31 @@ io.on('connection', (socket) => {
             players: room.playerIdentities
           });
         }
+      }
+    }
+
+    // 处理更新玩家姓名动作
+    if (action === 'updateName') {
+      const playerIdentity = room.playerIdentities.find(p => p.id === playerId);
+      if (playerIdentity && data.name) {
+        playerIdentity.name = data.name;
+        room.lastActivity = Date.now();
+
+        console.log(`玩家 ${playerId} 更新姓名为: ${data.name}`);
+
+        // 更新 room.gameState.players 以保持同步
+        if (room.gameState && room.gameState.players) {
+          const gameStatePlayer = room.gameState.players.find(p => p.id === playerId);
+          if (gameStatePlayer) {
+            gameStatePlayer.name = data.name;
+          }
+        }
+
+        // 广播更新后的游戏状态给所有客户端（包括主持人和其他玩家）
+        io.to(roomId).emit('gameStateUpdated', {
+          phase: room.gameState.phase,
+          players: room.playerIdentities
+        });
       }
     }
 

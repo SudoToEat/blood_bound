@@ -95,25 +95,25 @@ export function generatePlayers(count: number): Player[] {
 export function getCharacterAbilityDescription(characterType: CharacterType): string {
   switch (characterType) {
     case CharacterType.Elder: // 长老
-      return '可以使用鵝毛筆能力，将数字最大的角色变成氏族族长。'
+      return '可以使用鹅毛笔能力，将数字最大的角色变成氏族族长。'
     case CharacterType.Assassin: // 刺客
-      return '让任意一位玩家受两点傷害，然后将匕首交给该玩家。'
+      return '让任意一位玩家受两点伤害，然后将匕首交给该玩家。'
     case CharacterType.Jester: // 弄臣
-      return '选择两位玩家，私下查看他们的角色陣營身份。弄臣右下角的陣營线索和实际陣營相反。'
-    case CharacterType.Alchemist: // 煉金術士
-      return '【干涉】一名玩家，并可以选择治癒一点或是傷害一点被干涉的玩家。'
-    case CharacterType.Mentalist: // 靈喻師
-      return '强制任何一位玩家受到一点傷害，并把匕首交给该玩家。被靈喻師能力傷害的玩家无法发动角色能力。'
-    case CharacterType.Guardian: // 衛士
-      return '将盾牌卡给予任意玩家，并把长劍卡放在自己桌面上。其他玩家无法攻击或用能力傷害有盾牌卡的玩家。'
-    case CharacterType.Berserker: // 狂戰士
-      return '强制让刚才攻击他的玩家受一点傷害。'
-    case CharacterType.Mage: // 法師
-      return '将法杖卡给自己和任意一位玩家。有法杖卡的玩家拿陣營指示物时，只能拿未知陣營指示物。'
+      return '选择两位玩家，私下查看他们的角色阵营身份。弄臣右下角的阵营线索和实际阵营相反。'
+    case CharacterType.Alchemist: // 炼金术士
+      return '【干涉】一名玩家，并可以选择治愈一点或是伤害一点被干涉的玩家。'
+    case CharacterType.Mentalist: // 灵谕师
+      return '强制任何一位玩家受到一点伤害，并把匕首交给该玩家。被灵谕师能力伤害的玩家无法发动角色能力。'
+    case CharacterType.Guardian: // 卫士
+      return '将盾牌卡给予任意玩家，并把长剑卡放在自己桌面上。其他玩家无法攻击或用能力伤害有盾牌卡的玩家。'
+    case CharacterType.Berserker: // 狂战士
+      return '强制让刚才攻击他的玩家受一点伤害。'
+    case CharacterType.Mage: // 法师
+      return '将法杖卡给自己和任意一位玩家。有法杖卡的玩家拿阵营指示物时，只能拿未知阵营指示物。'
     case CharacterType.Geisha: // 舞妓
       return '将折扇卡给任意一位玩家，有折扇卡的玩家，无法让其他玩家进行干涉。'
-    case CharacterType.Inquisitor: // 調查官
-      return '调查官属于中立角色。调查官不可以攻击已经受傷三点的玩家。调查官受傷时，可以拿任意种类的陣營指示物。'
+    case CharacterType.Inquisitor: // 调查官
+      return '调查官属于中立角色。调查官不可以攻击已经受伤三点的玩家。调查官受伤时，可以拿任意种类的阵营指示物。'
     default:
       return ''
   }
@@ -125,13 +125,13 @@ export function getCharacterName(characterType: CharacterType): string {
     case CharacterType.Elder: return '长老'
     case CharacterType.Assassin: return '刺客'
     case CharacterType.Jester: return '弄臣'
-    case CharacterType.Alchemist: return '煉金術士'
-    case CharacterType.Mentalist: return '靈喻師'
-    case CharacterType.Guardian: return '衛士'
-    case CharacterType.Berserker: return '狂戰士'
-    case CharacterType.Mage: return '法師'
+    case CharacterType.Alchemist: return '炼金术士'
+    case CharacterType.Mentalist: return '灵谕师'
+    case CharacterType.Guardian: return '卫士'
+    case CharacterType.Berserker: return '狂战士'
+    case CharacterType.Mage: return '法师'
     case CharacterType.Geisha: return '舞妓'
-    case CharacterType.Inquisitor: return '調查官'
+    case CharacterType.Inquisitor: return '调查官'
     default: return '未知角色'
   }
 }
@@ -139,7 +139,7 @@ export function getCharacterName(characterType: CharacterType): string {
 // 获取阵营名称
 export function getFactionName(faction: Faction): string {
   switch (faction) {
-    case Faction.Phoenix: return '鳳凰氏族'
+    case Faction.Phoenix: return '凤凰氏族'
     case Faction.Gargoyle: return '石像鬼氏族'
     case Faction.Neutral: return '中立'
     default: return '未知阵营'

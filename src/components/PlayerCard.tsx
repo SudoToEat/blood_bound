@@ -7,9 +7,10 @@ interface PlayerCardProps {
   onClick: () => void
   showCharacterImage?: boolean
   onToggleReveal?: () => void // 新增：切换揭示状态的回调
+  onHeal?: () => void // 新增：恢复血量的回调
 }
 
-const PlayerCard = ({ player, onClick, showCharacterImage = false, onToggleReveal }: PlayerCardProps) => {
+const PlayerCard = ({ player, onClick, showCharacterImage = false, onToggleReveal, onHeal }: PlayerCardProps) => {
   const characterImage = getCharacterImage(player.characterType)
   const characterName = getCharacterName(player.characterType)
   const factionName = getFactionName(player.faction)
@@ -22,6 +23,12 @@ const PlayerCard = ({ player, onClick, showCharacterImage = false, onToggleRevea
   const handleToggleReveal = (e: React.MouseEvent) => {
     e.stopPropagation()
     onToggleReveal?.()
+  }
+
+  // 处理恢复血量按钮点击，阻止事件冒泡
+  const handleHeal = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    onHeal?.()
   }
 
   // 获取展示指示器的颜色
@@ -46,7 +53,7 @@ const PlayerCard = ({ player, onClick, showCharacterImage = false, onToggleRevea
       onClick={onClick}
     >
       <div className="flex justify-between items-center mb-2">
-        <h3 className="text-lg font-bold">玩家 {player.id}</h3>
+        <h3 className="text-lg font-bold">{player.name || `玩家 ${player.id}`}</h3>
         <div className="flex gap-1">
           {Array.from({ length: 3 }).map((_, index) => {
             const reveal = player.reveals?.[index]
@@ -89,20 +96,26 @@ const PlayerCard = ({ player, onClick, showCharacterImage = false, onToggleRevea
       )}
       
       <div className="text-sm text-gray-400">
-        {player.revealedFaction ? (
-          <div className={`${factionColor} font-semibold`}>
-            阵营: {factionName}
-          </div>
-        ) : (
-          <div>阵营: 未揭示</div>
-        )}
+        <div className={`${player.revealedFaction ? factionColor : ''} font-semibold mb-1`}>
+          阵营: {player.revealedFaction ? factionName : '未揭示'}
+        </div>
 
-        {player.revealedRank ? (
-          <div className="font-semibold">
-            等级: {player.rank}
+        <div className="font-semibold">
+          等级: {player.revealedRank ? player.rank : '未揭示'}
+        </div>
+
+        {/* 如果阵营或等级已揭示，显示玩家姓名和角色（如果有） */}
+        {(player.revealedFaction || player.revealedRank) && (
+          <div className="mt-2 text-xs">
+            {player.name && (
+              <div className="text-gray-500 mb-1">
+                玩家姓名: {player.name}
+              </div>
+            )}
+            <div className="text-yellow-400">
+              角色: {characterName}
+            </div>
           </div>
-        ) : (
-          <div>等级: 未揭示</div>
         )}
       </div>
       
@@ -112,12 +125,12 @@ const PlayerCard = ({ player, onClick, showCharacterImage = false, onToggleRevea
           <div className="flex flex-wrap gap-1 mt-1">
             {player.abilityCards.map((card, index) => (
               <span key={index} className="px-2 py-1 bg-gray-700 rounded-md">
-                {card === 'sword' ? '長劍' : 
-                 card === 'fan' ? '折扇' : 
-                 card === 'staff' ? '法杖' : 
-                 card === 'shield' ? '盾牌' : 
-                 card === 'curse' ? '詛咒' : 
-                 card === 'quill' ? '鵝毛筆' : card}
+                {card === 'sword' ? '长剑' :
+                 card === 'fan' ? '折扇' :
+                 card === 'staff' ? '法杖' :
+                 card === 'shield' ? '盾牌' :
+                 card === 'curse' ? '诅咒' :
+                 card === 'quill' ? '鹅毛笔' : card}
               </span>
             ))}
           </div>
@@ -135,6 +148,14 @@ const PlayerCard = ({ player, onClick, showCharacterImage = false, onToggleRevea
             }`}
           >
             {isRevealed ? '🙈 隐藏身份' : '👁️ 揭示身份'}
+          </button>
+        )}
+        {onHeal && player.reveals && player.reveals.length > 0 && (
+          <button
+            onClick={handleHeal}
+            className="w-full py-1 px-2 bg-purple-600 hover:bg-purple-700 rounded text-sm transition-colors"
+          >
+            💚 恢复血量
           </button>
         )}
         <button

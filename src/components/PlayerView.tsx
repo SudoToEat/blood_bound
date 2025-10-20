@@ -16,7 +16,9 @@ const PlayerView = ({ player, allPlayers, onBack, hideBackButton = false, isPlay
   const [isLoaded, setIsLoaded] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showRules, setShowRules] = useState(false);
-  const { sendPlayerAction } = useGame();
+  const [isEditingName, setIsEditingName] = useState(false);
+  const [playerName, setPlayerName] = useState(player.name || '');
+  const { sendPlayerAction, updatePlayerName } = useGame();
 
   useEffect(() => {
     // 检查玩家对象是否完整
@@ -39,6 +41,21 @@ const PlayerView = ({ player, allPlayers, onBack, hideBackButton = false, isPlay
     }
     console.log(`玩家 ${player.id} 展示线索: ${revealType}`);
     sendPlayerAction('addReveal', { revealType });
+  };
+
+  // 处理姓名保存
+  const handleSaveName = () => {
+    if (playerName.trim()) {
+      updatePlayerName(playerName.trim());
+      setIsEditingName(false);
+    } else {
+      alert('姓名不能为空');
+    }
+  };
+
+  // 获取显示的玩家名称
+  const getPlayerDisplayName = () => {
+    return player.name || `玩家 ${player.id}`;
   };
 
   // 如果有错误，显示错误信息
@@ -89,7 +106,50 @@ const PlayerView = ({ player, allPlayers, onBack, hideBackButton = false, isPlay
       <div className="text-center mb-6">
         <div className="flex justify-between items-center mb-2">
           <div className="w-8"></div> {/* 占位元素保持标题居中 */}
-          <h2 className="text-2xl font-bold flex-1">玩家 {player.id} 的身份</h2>
+          <div className="flex-1 flex items-center justify-center gap-2">
+            {isEditingName ? (
+              <div className="flex items-center gap-2">
+                <input
+                  type="text"
+                  value={playerName}
+                  onChange={(e) => setPlayerName(e.target.value)}
+                  className="px-3 py-1 bg-gray-700 text-white rounded border border-gray-600 focus:outline-none focus:border-blue-500"
+                  placeholder="输入姓名"
+                  maxLength={10}
+                />
+                <button
+                  onClick={handleSaveName}
+                  className="px-3 py-1 bg-green-600 hover:bg-green-700 text-white rounded text-sm"
+                >
+                  保存
+                </button>
+                <button
+                  onClick={() => {
+                    setIsEditingName(false);
+                    setPlayerName(player.name || '');
+                  }}
+                  className="px-3 py-1 bg-gray-600 hover:bg-gray-700 text-white rounded text-sm"
+                >
+                  取消
+                </button>
+              </div>
+            ) : (
+              <>
+                <h2 className="text-2xl font-bold">{getPlayerDisplayName()} 的身份</h2>
+                {isPlayerAccess && (
+                  <button
+                    onClick={() => setIsEditingName(true)}
+                    className="text-gray-400 hover:text-white p-1"
+                    title="修改姓名"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                    </svg>
+                  </button>
+                )}
+              </>
+            )}
+          </div>
           <button
             onClick={() => setShowRules(true)}
             className="text-gray-400 hover:text-white p-1"
@@ -103,12 +163,14 @@ const PlayerView = ({ player, allPlayers, onBack, hideBackButton = false, isPlay
         <p className="text-sm text-gray-400">请不要让其他玩家看到此屏幕</p>
       </div>
 
-      {/* 显示上一个玩家的阵营颜色 */}
-      {previousPlayerInfo && (
+      {/* 显示上一个玩家的阵营颜色 - 仅在玩家访问模式下显示 */}
+      {isPlayerAccess && previousPlayerInfo && (
         <div className="mb-6 bg-gray-700 p-4 rounded-lg border-2 border-purple-500">
-          <h4 className="font-bold mb-2 text-purple-300">右边玩家信息</h4>
+          <h4 className="font-bold mb-2 text-purple-300">前一个玩家信息</h4>
           <div className="flex items-center justify-between">
-            <span className="text-sm text-gray-300">玩家 {previousPlayerInfo.player.id} 的阵营:</span>
+            <span className="text-sm text-gray-300">
+              {previousPlayerInfo.player.name || `玩家 ${previousPlayerInfo.player.id}`} 的阵营:
+            </span>
             <span className={`font-bold text-lg ${getFactionColor(previousPlayerInfo.displayedFaction)}`}>
               {getFactionName(previousPlayerInfo.displayedFaction)}
             </span>
@@ -146,15 +208,35 @@ const PlayerView = ({ player, allPlayers, onBack, hideBackButton = false, isPlay
             )}
           </ul>
         </div>
+
+        {/* 显示已展示的线索 - 对主机和玩家都显示 */}
+        {player.reveals && player.reveals.length > 0 && (
+          <div className="bg-gray-700 p-4 rounded-lg mt-4">
+            <h4 className="font-bold mb-2">已展示线索 ({player.reveals.length} / 3)</h4>
+            <div className="flex flex-wrap gap-2">
+              {player.reveals.map((reveal, index) => (
+                <div
+                  key={index}
+                  className={`px-3 py-1 rounded-full text-sm font-bold ${
+                    reveal === 'red' ? 'bg-red-600' :
+                    reveal === 'blue' ? 'bg-blue-600' :
+                    'bg-gray-600'
+                  }`}
+                >
+                  {reveal === 'red' ? '🔴 红色(凤凰)' :
+                   reveal === 'blue' ? '🔵 蓝色(石像鬼)' :
+                   '❓ 问号(未知)'}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* 底部按钮区域 */}
       {isPlayerAccess ? (
         // 玩家访问模式：显示展示线索按钮
         <div className="space-y-3">
-          <p className="text-center text-sm text-gray-400 mb-3">
-            已展示线索: {player.reveals?.length || 0} / 3
-          </p>
           <div className="grid grid-cols-3 gap-3">
             <button
               onClick={() => handleReveal('red')}
