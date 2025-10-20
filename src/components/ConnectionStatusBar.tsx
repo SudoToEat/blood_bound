@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react'
-import { socketService, ConnectionStatus } from '../utils/socketService'
+import { socketService } from '../utils/socketService'
+import type { ConnectionStatus } from '../types/socketTypes'
 
 interface ConnectionStatusBarProps {
   className?: string
 }
 
 const ConnectionStatusBar = ({ className = '' }: ConnectionStatusBarProps) => {
-  const [status, setStatus] = useState<ConnectionStatus>(ConnectionStatus.DISCONNECTED)
+  const [status, setStatus] = useState<ConnectionStatus>('disconnected')
   const [message, setMessage] = useState<string>('')
   const [isVisible, setIsVisible] = useState(false)
 
@@ -18,12 +19,12 @@ const ConnectionStatusBar = ({ className = '' }: ConnectionStatusBarProps) => {
 
       // 只在连接中、重连中或错误时显示状态栏
       if (
-        newStatus === ConnectionStatus.CONNECTING ||
-        newStatus === ConnectionStatus.RECONNECTING ||
-        newStatus === ConnectionStatus.ERROR
+        newStatus === 'connecting' ||
+        newStatus === 'reconnecting' ||
+        newStatus === 'error'
       ) {
         setIsVisible(true)
-      } else if (newStatus === ConnectionStatus.CONNECTED) {
+      } else if (newStatus === 'connected') {
         // 连接成功后显示2秒
         setIsVisible(true)
         setTimeout(() => setIsVisible(false), 2000)
@@ -40,31 +41,31 @@ const ConnectionStatusBar = ({ className = '' }: ConnectionStatusBarProps) => {
   // 根据状态返回样式
   const getStatusStyle = () => {
     switch (status) {
-      case ConnectionStatus.CONNECTED:
+      case 'connected':
         return {
           bg: 'bg-green-600',
           icon: '✓',
           text: '已连接'
         }
-      case ConnectionStatus.CONNECTING:
+      case 'connecting':
         return {
           bg: 'bg-yellow-600',
           icon: '⟳',
           text: '正在连接...'
         }
-      case ConnectionStatus.RECONNECTING:
+      case 'reconnecting':
         return {
           bg: 'bg-yellow-600',
           icon: '⟳',
           text: '重新连接中...'
         }
-      case ConnectionStatus.ERROR:
+      case 'error':
         return {
           bg: 'bg-red-600',
           icon: '✗',
           text: '连接错误'
         }
-      case ConnectionStatus.DISCONNECTED:
+      case 'disconnected':
       default:
         return {
           bg: 'bg-gray-600',
@@ -90,7 +91,7 @@ const ConnectionStatusBar = ({ className = '' }: ConnectionStatusBarProps) => {
         {/* 图标 */}
         <span
           className={`font-bold text-lg ${
-            status === ConnectionStatus.CONNECTING || status === ConnectionStatus.RECONNECTING
+            status === 'connecting' || status === 'reconnecting'
               ? 'animate-spin'
               : ''
           }`}
@@ -102,7 +103,7 @@ const ConnectionStatusBar = ({ className = '' }: ConnectionStatusBarProps) => {
         <span className="font-medium">{message || style.text}</span>
 
         {/* 如果是错误状态，提供刷新按钮 */}
-        {status === ConnectionStatus.ERROR && (
+        {status === 'error' && (
           <button
             onClick={() => window.location.reload()}
             className="ml-4 px-3 py-1 bg-white bg-opacity-20 hover:bg-opacity-30 rounded text-xs font-bold transition-colors"

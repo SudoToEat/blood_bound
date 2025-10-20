@@ -26,53 +26,82 @@ export function generatePlayers(count: number): Player[] {
     throw new Error('玩家数量必须在6到12人之间')
   }
 
-  // 确定是否使用中立角色（调查官）
+  // 确定是否使用中立角色（调查官）- 奇数人数时使用
   const useInquisitor = count % 2 !== 0
-  
-  // 计算每个阵营的玩家数量
-  let phoenixCount = Math.floor(count / 2)
-  let gargoyleCount = Math.floor(count / 2)
-  
-  // 如果有中立角色，则减少一个阵营的人数
-  if (useInquisitor) {
-    phoenixCount--
-  }
 
   // 创建角色类型数组
   const characterTypes: CharacterType[] = []
-  
-  // 添加鳳凰氏族角色
-  for (let i = 1; i <= phoenixCount; i++) {
-    characterTypes.push(i as CharacterType)
+
+  // 可用的角色等级（1-9，不包括调查官）
+  const availableRanks = [1, 2, 3, 4, 5, 6, 7, 8, 9]
+
+  // 计算需要的非调查官角色数量
+  const regularRolesNeeded = useInquisitor ? count - 1 : count
+
+  if (regularRolesNeeded <= 9) {
+    // 6-9人的非调查官角色：使用唯一的角色
+    for (let i = 1; i <= regularRolesNeeded; i++) {
+      characterTypes.push(i as CharacterType)
+    }
+  } else {
+    // 10-11人的非调查官角色：需要重复使用角色
+    // 首先使用所有1-9的角色
+    characterTypes.push(...availableRanks)
+
+    // 然后再添加需要重复的角色数量
+    const extraNeeded = regularRolesNeeded - 9
+    // 随机选择要重复的角色
+    const extraRanks = shuffleArray([...availableRanks]).slice(0, extraNeeded)
+    characterTypes.push(...extraRanks as CharacterType[])
   }
-  
-  // 添加石像鬼氏族角色
-  for (let i = 1; i <= gargoyleCount; i++) {
-    characterTypes.push(i as CharacterType)
-  }
-  
-  // 如果需要，添加调查官
+
+  // 如果需要，添加调查官（等级10）
   if (useInquisitor) {
     characterTypes.push(CharacterType.Inquisitor)
   }
-  
-  // 打乱角色类型
+
+  // 打乱角色类型数组
   const shuffledCharacterTypes = shuffleArray(characterTypes)
-  
+
+  // 计算每个阵营的玩家数量
+  // 非调查官角色的总数
+  const regularRolesCount = useInquisitor ? count - 1 : count
+
+  // 平分到两个阵营
+  let phoenixCount = Math.floor(regularRolesCount / 2)
+  let gargoyleCount = Math.ceil(regularRolesCount / 2) // 使用ceil确保总数正确
+
+  // 创建阵营数组并打乱（不包括中立，调查官会单独处理）
+  const factions: Faction[] = []
+
+  // 添加凤凰氏族
+  for (let i = 0; i < phoenixCount; i++) {
+    factions.push(Faction.Phoenix)
+  }
+
+  // 添加石像鬼氏族
+  for (let i = 0; i < gargoyleCount; i++) {
+    factions.push(Faction.Gargoyle)
+  }
+
+  // 打乱阵营数组
+  const shuffledFactions = shuffleArray(factions)
+
   // 创建玩家数组
   const players: Player[] = []
-  
+  let factionIndex = 0 // 用于追踪阵营数组的索引
+
   for (let i = 0; i < count; i++) {
     const characterType = shuffledCharacterTypes[i]
     let faction: Faction
 
-    // 根据角色类型和索引确定阵营
+    // 如果角色是调查官，设置为中立阵营
     if (characterType === CharacterType.Inquisitor) {
       faction = Faction.Neutral
-    } else if (i < phoenixCount) {
-      faction = Faction.Phoenix
     } else {
-      faction = Faction.Gargoyle
+      // 其他角色从打乱的阵营数组中获取阵营
+      faction = shuffledFactions[factionIndex]
+      factionIndex++
     }
 
     const player: Player = {

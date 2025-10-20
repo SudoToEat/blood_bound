@@ -163,10 +163,10 @@ export const STORAGE_KEYS = {
 
 // ============ API 端点 ============
 export const API_ENDPOINTS = {
-  HEALTH: '/api/health',
-  ROOMS: '/api/rooms',
-  JOIN_ROOM: (roomId: string) => `/api/rooms/${roomId}/join`,
-  GET_ROOM: (roomId: string) => `/api/rooms/${roomId}`,
+  HEALTH: '/health',
+  ROOMS: '/rooms',
+  JOIN_ROOM: (roomId: string) => `/rooms/${roomId}/join`,
+  GET_ROOM: (roomId: string) => `/rooms/${roomId}`,
 } as const
 
 // ============ WebSocket 事件 ============

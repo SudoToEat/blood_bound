@@ -41,6 +41,7 @@ const GameBoard = ({ onBackToSetup }: GameBoardProps) => {
         try {
           await restartGame()
           setSelectedPlayer(null) // 关闭任何打开的玩家视图
+          setShowAllIdentities(false) // 重置揭示所有身份状态
           toast.success('游戏已重新开始！所有玩家身份已重新分配。')
         } catch (error) {
           logger.error('重新开始游戏失败:', error)

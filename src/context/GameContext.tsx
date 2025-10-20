@@ -1,6 +1,5 @@
-import React, { createContext, useContext, useReducer, useEffect, ReactNode } from 'react'
-import { generatePlayers, generateRoomId, generateAccessCode } from '../utils/gameUtils'
-import { Player, Faction, GameRoom } from '../types/gameTypes'
+import { createContext, useContext, useReducer, useEffect, ReactNode } from 'react'
+import { PlayerActionType, PlayerActionDataPayload } from '../types/socketTypes'
 import { ApiService } from '../utils/apiService'
 import { socketService } from '../utils/socketService'
 import { logger } from '../utils/logger'
@@ -113,7 +112,7 @@ interface GameContextType {
   startGame: () => Promise<void>
   restartGame: () => Promise<void>
   updateGameState: (gameData: any) => void
-  sendPlayerAction: (action: string, data?: any) => void
+  sendPlayerAction: (action: PlayerActionType, data?: PlayerActionDataPayload) => void
   updatePlayerName: (name: string) => void
   resetGame: () => void
   checkServerHealth: () => Promise<boolean>
@@ -123,7 +122,6 @@ const GameContext = createContext<GameContextType | undefined>(undefined)
 
 // 本地存储键
 const STORAGE_KEY = 'bloodbond_game_state'
-const PLAYER_ACCESS_KEY = 'bloodbond_player_access'
 
 // 从 localStorage 恢复初始状态
 function getInitialState(): GameState {
@@ -151,9 +149,17 @@ export function GameProvider({ children }: { children: ReactNode }) {
   // 检查服务器健康状态
   const checkServerHealth = async (): Promise<boolean> => {
     try {
-      const health = await ApiService.healthCheck()
-      dispatch({ type: 'SET_CONNECTION_STATUS', payload: health.status === 'ok' })
-      return health.status === 'ok'
+      const result = await ApiService.healthCheck()
+
+      // Check API call success
+      if (!result.success) {
+        dispatch({ type: 'SET_CONNECTION_STATUS', payload: false })
+        return false
+      }
+
+      const isHealthy = result.data.status === 'ok'
+      dispatch({ type: 'SET_CONNECTION_STATUS', payload: isHealthy })
+      return isHealthy
     } catch (error) {
       dispatch({ type: 'SET_CONNECTION_STATUS', payload: false })
       return false
@@ -163,8 +169,20 @@ export function GameProvider({ children }: { children: ReactNode }) {
   // 创建房间
   const createRoom = async (playerCount: number): Promise<string> => {
     try {
-      const response = await ApiService.createRoom(playerCount)
-      const roomId = response.roomId
+      const result = await ApiService.createRoom(playerCount)
+
+      // 检查API调用是否成功
+      if (!result.success) {
+        throw new Error(result.error || '创建房间失败')
+      }
+
+      const roomId = result.data.roomId
+
+      // 验证roomId有效性
+      if (!roomId || roomId.trim() === '') {
+        throw new Error('服务器返回的房间ID无效')
+      }
+
       dispatch({ type: 'SET_ROOM', payload: { roomId, playerCount } })
 
       // 保存房间信息到 localStorage
@@ -173,7 +191,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
       // 主持人也连接到WebSocket以接收玩家加入通知
       // 使用特殊的playerId (0) 表示主持人
       logger.log('主持人连接WebSocket，房间号:', roomId)
-      const socket = socketService.connect(roomId, 0)
+      socketService.connect(roomId, 0)
 
       // 监听玩家加入事件
       socketService.onPlayerJoined((data) => {
@@ -198,7 +216,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
       socketService.onPlayerStatusChanged((data) => {
         logger.log('主持人收到玩家状态变化:', data);
         // 更新玩家在线状态
-        if (response.roomId) {
+        if (roomId) {
           // 通过 dispatch 更新本地状态
           dispatch({
             type: 'UPDATE_GAME_DATA',
@@ -225,7 +243,14 @@ export function GameProvider({ children }: { children: ReactNode }) {
     try {
       logger.log(`尝试加入房间: ${roomId}, 玩家ID: ${playerId}`);
       // 先获取房间信息
-      const roomInfo = await ApiService.getRoomInfo(roomId)
+      const result = await ApiService.getRoomInfo(roomId)
+
+      // 检查API调用是否成功
+      if (!result.success) {
+        throw new Error(result.error || '获取房间信息失败')
+      }
+
+      const roomInfo = result.data
       logger.log('获取房间信息成功:', roomInfo);
 
       dispatch({ type: 'SET_ROOM', payload: { roomId, playerCount: roomInfo.playerCount } })
@@ -239,7 +264,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
       }
 
       // 连接WebSocket（在注册监听器之前先连接）
-      const socket = socketService.connect(roomId, playerId)
+      socketService.connect(roomId, playerId)
       logger.log('WebSocket连接初始化完成');
 
       // 监听socket事件
@@ -329,12 +354,18 @@ export function GameProvider({ children }: { children: ReactNode }) {
       }
 
       logger.log('主持人开始游戏，房间号:', state.roomId);
-      const gameData = await ApiService.startGame(state.roomId);
-      logger.log('获得游戏状态:', gameData);
+      const result = await ApiService.startGame(state.roomId);
+
+      // Check API call success
+      if (!result.success) {
+        throw new Error(result.error || '开始游戏失败');
+      }
+
+      logger.log('获得游戏状态:', result.data);
 
       // 更新本地状态
-      if (gameData.gameState) {
-        dispatch({ type: 'UPDATE_GAME_DATA', payload: gameData.gameState });
+      if (result.data.gameState) {
+        dispatch({ type: 'UPDATE_GAME_DATA', payload: result.data.gameState });
         dispatch({ type: 'SET_GAME_PHASE', payload: 'playing' });
       }
     } catch (error) {
@@ -353,12 +384,18 @@ export function GameProvider({ children }: { children: ReactNode }) {
       }
 
       logger.log('主持人重新开始游戏，房间号:', state.roomId);
-      const gameData = await ApiService.restartGame(state.roomId);
-      logger.log('获得新游戏状态:', gameData);
+      const result = await ApiService.restartGame(state.roomId);
+
+      // Check API call success
+      if (!result.success) {
+        throw new Error(result.error || '重新开始游戏失败');
+      }
+
+      logger.log('获得新游戏状态:', result.data);
 
       // 更新本地状态
-      if (gameData.gameState) {
-        dispatch({ type: 'UPDATE_GAME_DATA', payload: gameData.gameState });
+      if (result.data.gameState) {
+        dispatch({ type: 'UPDATE_GAME_DATA', payload: result.data.gameState });
         dispatch({ type: 'SET_GAME_PHASE', payload: 'playing' });
       }
     } catch (error) {
@@ -380,9 +417,14 @@ export function GameProvider({ children }: { children: ReactNode }) {
   }
 
   // 发送玩家操作
-  const sendPlayerAction = (action: string, data?: any) => {
+  const sendPlayerAction = (action: PlayerActionType, data?: PlayerActionDataPayload) => {
     if (state.roomId && state.playerId) {
-      socketService.sendPlayerAction(state.roomId, state.playerId, action, data)
+      socketService.sendPlayerAction({
+        roomId: state.roomId,
+        playerId: state.playerId,
+        action,
+        data
+      })
     }
   }
 
@@ -394,7 +436,12 @@ export function GameProvider({ children }: { children: ReactNode }) {
 
     if (state.roomId && state.playerId) {
       logger.log(`✅ 发送更新姓名请求: 玩家 ${state.playerId} -> ${name}`);
-      socketService.sendPlayerAction(state.roomId, state.playerId, 'updateName', { name });
+      socketService.sendPlayerAction({
+        roomId: state.roomId,
+        playerId: state.playerId,
+        action: 'updateName',
+        data: { name }
+      });
     } else {
       logger.error('❌ 无法更新姓名: roomId 或 playerId 缺失');
     }
@@ -415,12 +462,19 @@ export function GameProvider({ children }: { children: ReactNode }) {
           logger.log('检测到已保存的房间号，尝试重新连接:', state.roomId)
 
           // 先调用 startGame 获取完整的游戏状态
-          const gameData = await ApiService.startGame(state.roomId)
-          logger.log('获取到游戏状态:', gameData)
+          const result = await ApiService.startGame(state.roomId)
+
+          // Check API call success
+          if (!result.success) {
+            logger.error('获取游戏状态失败:', result.error)
+            return
+          }
+
+          logger.log('获取到游戏状态:', result.data)
 
           // 更新游戏数据
-          if (gameData.gameState && gameData.gameState.players) {
-            dispatch({ type: 'UPDATE_GAME_DATA', payload: gameData.gameState })
+          if (result.data.gameState && result.data.gameState.players) {
+            dispatch({ type: 'UPDATE_GAME_DATA', payload: result.data.gameState })
             dispatch({ type: 'SET_GAME_PHASE', payload: 'playing' })
           }
 

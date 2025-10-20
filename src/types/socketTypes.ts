@@ -99,7 +99,8 @@ export interface GameStatePayload {
  */
 export interface PlayerJoinedData {
   playerId: number
-  playerCount: number
+  playerCount?: number
+  players: number[]  // 已加入的玩家ID列表
 }
 
 /**
@@ -107,7 +108,8 @@ export interface PlayerJoinedData {
  */
 export interface PlayerLeftData {
   playerId: number
-  playerCount: number
+  playerCount?: number
+  players: number[]  // 剩余的玩家ID列表
 }
 
 /**
