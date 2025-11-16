@@ -26,6 +26,10 @@ const PlayerView = ({ player, allPlayers, onBack, hideBackButton = false, isPlay
   const toast = useToast();
 
   useEffect(() => {
+    setPlayerName(player.name || '');
+  }, [player.name]);
+
+  useEffect(() => {
     // 检查玩家对象是否完整
     if (!player || !player.characterType || !player.faction) {
       logger.error('玩家身份信息不完整:', player);

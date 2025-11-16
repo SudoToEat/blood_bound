@@ -18,10 +18,13 @@ const GameBoard = ({ onBackToSetup }: GameBoardProps) => {
   const playerObjects: Player[] = Array.isArray(state.gameData?.players)
     ? [...state.gameData.players]
     : []
-  const [selectedPlayer, setSelectedPlayer] = useState<Player | null>(null)
+  const [selectedPlayerId, setSelectedPlayerId] = useState<number | null>(null)
   const [showRules, setShowRules] = useState(false)
   const [isRestarting, setIsRestarting] = useState(false)
   const [showAllIdentities, setShowAllIdentities] = useState(false)
+  const selectedPlayer = selectedPlayerId
+    ? playerObjects.find((player) => player.id === selectedPlayerId) || null
+    : null
 
   // 监听 gameData 变化，确保显示最新数据
   useEffect(() => {
@@ -40,7 +43,7 @@ const GameBoard = ({ onBackToSetup }: GameBoardProps) => {
         setIsRestarting(true)
         try {
           await restartGame()
-          setSelectedPlayer(null) // 关闭任何打开的玩家视图
+          setSelectedPlayerId(null) // 关闭任何打开的玩家视图
           setShowAllIdentities(false) // 重置揭示所有身份状态
           toast.success('游戏已重新开始！所有玩家身份已重新分配。')
         } catch (error) {
@@ -216,7 +219,7 @@ const GameBoard = ({ onBackToSetup }: GameBoardProps) => {
               <PlayerCard
                 key={player.id}
                 player={player}
-                onClick={() => setSelectedPlayer(player)}
+                onClick={() => setSelectedPlayerId(player.id)}
                 showCharacterImage={false}
                 onToggleReveal={() => handleToggleReveal(player.id)}
                 onHeal={() => handleHealPlayer(player.id)}
@@ -239,7 +242,7 @@ const GameBoard = ({ onBackToSetup }: GameBoardProps) => {
       {selectedPlayer && (
         <div
           className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4"
-          onClick={() => setSelectedPlayer(null)}
+          onClick={() => setSelectedPlayerId(null)}
         >
           <div
             className="max-h-[90vh] overflow-y-auto"

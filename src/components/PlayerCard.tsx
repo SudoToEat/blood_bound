@@ -174,6 +174,29 @@ const PlayerCard = memo(({ player, onClick, showCharacterImage = false, onToggle
           </div>
         </div>
       )}
+
+      {/* 展示线索详情，避免主持人遗漏 */}
+      {player.reveals && player.reveals.length > 0 && (
+        <div className="mt-3">
+          <span className="text-xs text-gray-400">已展示线索:</span>
+          <div className="flex flex-wrap gap-2 mt-1">
+            {player.reveals.map((reveal, index) => (
+              <span
+                key={`reveal-detail-${player.id}-${index}`}
+                className={`px-2 py-1 rounded-full text-xs font-semibold ${
+                  reveal === 'red'
+                    ? 'bg-red-600 text-white'
+                    : reveal === 'blue'
+                      ? 'bg-blue-600 text-white'
+                      : 'bg-gray-600 text-white'
+                }`}
+              >
+                {reveal === 'red' ? '红色' : reveal === 'blue' ? '蓝色' : '问号'}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
       
       <div className="mt-3 space-y-2">
         {/* 次要操作：揭示/隐藏身份 */}
