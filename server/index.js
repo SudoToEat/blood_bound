@@ -253,8 +253,19 @@ app.post('/api/rooms/:roomId/restart', (req, res) => {
     return res.status(404).json({ error: '房间不存在' });
   }
 
+  // 在重置身份前缓存现有玩家的自定义姓名，按座位ID保存
+  const previousNames = new Map();
+  room.playerIdentities.forEach(player => {
+    if (player.name) {
+      previousNames.set(player.id, player.name);
+    }
+  });
+
   // 重新生成所有玩家身份
-  const newPlayerIdentities = generatePlayers(room.playerCount);
+  const newPlayerIdentities = generatePlayers(room.playerCount).map(player => {
+    const preservedName = previousNames.get(player.id);
+    return preservedName ? { ...player, name: preservedName } : player;
+  });
   room.playerIdentities = newPlayerIdentities;
   room.gameState = {
     phase: 'playing',
