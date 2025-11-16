@@ -1,6 +1,5 @@
 import { createContext, useContext, useReducer, useEffect, useRef, ReactNode } from 'react'
 import { PlayerActionType, PlayerActionDataPayload } from '../types/socketTypes'
-import { Player } from '../types/gameTypes'
 import { ApiService } from '../utils/apiService'
 import { socketService } from '../utils/socketService'
 import { logger } from '../utils/logger'
@@ -74,33 +73,13 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         ...state,
         currentTurn: action.payload,
       }
-    case 'UPDATE_GAME_DATA': {
-      const previousPlayers = state.gameData?.players || []
-      // 创建新的玩家数组引用，必要时合并之前保存的姓名
-      let players: Player[] = action.payload?.players
-        ? action.payload.players.map((player: Player) => ({ ...player }))
-        : []
-
-      if (players.length && previousPlayers.length) {
-        players = players.map((player: Player) => {
-          if (!player.name) {
-            const prevPlayer = previousPlayers.find(
-              (prev) => prev.id === player.id && prev.name
-            )
-            if (prevPlayer?.name) {
-              return { ...player, name: prevPlayer.name }
-            }
-          }
-          return player
-        })
-      }
-
-      const newGameData = action.payload
-        ? {
-            ...action.payload,
-            players,
-          }
-        : null
+    case 'UPDATE_GAME_DATA':
+      // 创建深层新对象引用，确保 React 能检测到变化
+      const newGameData = action.payload ? {
+        ...action.payload,
+        // 确保 players 数组也是新的引用
+        players: action.payload.players ? [...action.payload.players] : []
+      } : null
 
       logger.log('UPDATE_GAME_DATA - 新游戏数据:', newGameData)
 
@@ -108,7 +87,6 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         ...state,
         gameData: newGameData,
       }
-    }
     case 'SET_CONNECTION_STATUS':
       return {
         ...state,
