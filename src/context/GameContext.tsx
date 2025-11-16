@@ -1,4 +1,4 @@
-import { createContext, useContext, useReducer, useEffect, ReactNode } from 'react'
+import { createContext, useContext, useReducer, useEffect, useRef, ReactNode } from 'react'
 import { PlayerActionType, PlayerActionDataPayload } from '../types/socketTypes'
 import { ApiService } from '../utils/apiService'
 import { socketService } from '../utils/socketService'
@@ -145,6 +145,11 @@ function getInitialState(): GameState {
 // 游戏提供者组件
 export function GameProvider({ children }: { children: ReactNode }) {
   const [state, dispatch] = useReducer(gameReducer, getInitialState())
+  const stateRef = useRef(state)
+
+  useEffect(() => {
+    stateRef.current = state
+  }, [state])
 
   // 检查服务器健康状态
   const checkServerHealth = async (): Promise<boolean> => {
@@ -216,15 +221,18 @@ export function GameProvider({ children }: { children: ReactNode }) {
       socketService.onPlayerStatusChanged((data) => {
         logger.log('主持人收到玩家状态变化:', data);
         // 更新玩家在线状态
-        if (roomId) {
+        const currentGameData = stateRef.current.gameData
+        if (roomId && currentGameData?.players) {
+          const updatedPlayers = currentGameData.players.map((p: any) =>
+            p.id === data.playerId ? { ...p, isOnline: data.isOnline, lastSeen: Date.now() } : p
+          )
+
           // 通过 dispatch 更新本地状态
           dispatch({
             type: 'UPDATE_GAME_DATA',
             payload: {
-              ...state.gameData,
-              players: state.gameData?.players?.map((p: any) =>
-                p.id === data.playerId ? { ...p, isOnline: data.isOnline, lastSeen: Date.now() } : p
-              )
+              ...currentGameData,
+              players: updatedPlayers
             }
           });
         }
@@ -321,15 +329,16 @@ export function GameProvider({ children }: { children: ReactNode }) {
       socketService.onPlayerStatusChanged((data) => {
         logger.log('玩家状态变化:', data);
         // 更新玩家在线状态
-        if (state.gameData && state.gameData.players) {
-          const updatedPlayers = state.gameData.players.map((p: any) =>
+        const currentGameData = stateRef.current.gameData
+        if (currentGameData && currentGameData.players) {
+          const updatedPlayers = currentGameData.players.map((p: any) =>
             p.id === data.playerId ? { ...p, isOnline: data.isOnline, lastSeen: Date.now() } : p
           );
 
           // 触发状态更新
           dispatch({
             type: 'UPDATE_GAME_DATA',
-            payload: { ...state.gameData, players: updatedPlayers }
+            payload: { ...currentGameData, players: updatedPlayers }
           });
         }
       })
