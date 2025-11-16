@@ -255,11 +255,17 @@ app.post('/api/rooms/:roomId/restart', (req, res) => {
 
   // 在重置身份前缓存现有玩家的自定义姓名，按座位ID保存
   const previousNames = new Map();
-  room.playerIdentities.forEach(player => {
-    if (player.name) {
-      previousNames.set(player.id, player.name);
-    }
-  });
+  const collectNames = (players = []) => {
+    players.forEach(player => {
+      if (player?.name) {
+        previousNames.set(player.id, player.name);
+      }
+    });
+  };
+  collectNames(room.playerIdentities);
+  if (room.gameState?.players) {
+    collectNames(room.gameState.players);
+  }
 
   // 重新生成所有玩家身份
   const newPlayerIdentities = generatePlayers(room.playerCount).map(player => {
