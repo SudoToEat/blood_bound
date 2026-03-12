@@ -251,7 +251,7 @@ const GameBoard = ({ onBackToSetup }: GameBoardProps) => {
             <PlayerView
               player={selectedPlayer}
               allPlayers={playerObjects}
-              onBack={() => setSelectedPlayer(null)}
+              onBack={() => setSelectedPlayerId(null)}
               hideBackButton={false}
             />
           </div>

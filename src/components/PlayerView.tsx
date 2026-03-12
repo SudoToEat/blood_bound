@@ -7,6 +7,7 @@ import { useToast } from '../context/ToastContext'
 import LoadingSpinner from './ui/LoadingSpinner'
 import RulesModal from './RulesModal'
 import { logger } from '../utils/logger'
+import { getPlayerRoundKey } from '../utils/gameState'
 
 interface PlayerViewProps {
   player: Player
@@ -24,6 +25,7 @@ const PlayerView = ({ player, allPlayers, onBack, hideBackButton = false, isPlay
   const [playerName, setPlayerName] = useState(player.name || '');
   const { sendPlayerAction, updatePlayerName, state } = useGame();
   const toast = useToast();
+  const playerRoundKey = getPlayerRoundKey(player);
 
   useEffect(() => {
     setPlayerName(player.name || '');
@@ -54,6 +56,10 @@ const PlayerView = ({ player, allPlayers, onBack, hideBackButton = false, isPlay
 
   // 处理诅咒卡分配
   const [curseAllocations, setCurseAllocations] = useState<Record<number, 'real' | 'fake' | null>>({});
+
+  useEffect(() => {
+    setCurseAllocations({});
+  }, [playerRoundKey]);
 
   // 获取可用的诅咒卡数量
   const getCurseCardCounts = () => {

@@ -351,7 +351,7 @@ io.on('connection', (socket) => {
       playerCount: room.playerCount,
       players: room.players.map(p => p.id),
       gameState: {
-        phase: 'playing', // 玩家加入即可查看身份，所以设为playing
+        phase: room.gameState.phase,
         players: room.playerIdentities // 发送所有玩家的完整身份数据
       }
     };

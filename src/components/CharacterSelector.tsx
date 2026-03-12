@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { CharacterType, Faction } from '../types/gameTypes'
-import { getCharacterName, getFactionName } from '../utils/gameUtils'
+import { getCharacterName } from '../utils/gameUtils'
 import { getCharacterImage } from '../assets/characters'
 import CharacterCard from './CharacterCard'
 

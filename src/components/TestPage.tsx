@@ -2,10 +2,13 @@ import { useState, useEffect } from 'react'
 import { useGame } from '../context/GameContext'
 
 const TestPage = () => {
-  const { players, roomId, createRoom, setPlayerCount, resetGame } = useGame()
+  const { state, createRoom, resetGame } = useGame()
   const [baseUrl, setBaseUrl] = useState('')
-  const [debugInfo, setDebugInfo] = useState<{[key: string]: any}>({})
-  const [testResults, setTestResults] = useState<{[key: string]: boolean}>({})
+  const [debugInfo, setDebugInfo] = useState<Record<string, unknown>>({})
+  const [testResults, setTestResults] = useState<Record<number, boolean>>({})
+  const roomId = state.roomId
+  const playerCount = state.playerCount || 6
+  const joinedPlayerIds = state.players
   
   useEffect(() => {
     // 获取当前页面的基础URL
@@ -33,16 +36,15 @@ const TestPage = () => {
   }, [])
   
   // 初始化测试数据
-  const initTestData = () => {
+  const initTestData = async () => {
     resetGame()
-    setPlayerCount(6)
-    createRoom()
+    await createRoom(6)
   }
 
   // 生成玩家访问链接
   const generatePlayerLink = (playerId: number) => {
     if (!roomId) return ''
-    return `${baseUrl}?room=${roomId}&player=${playerId}`
+    return `${baseUrl}/access/${roomId}/${playerId}`
   }
 
   // 测试链接是否可访问
@@ -52,7 +54,7 @@ const TestPage = () => {
     
     try {
       // 打开链接
-      const newWindow = window.open(link, `_blank_${playerId}`)
+      window.open(link, `_blank_${playerId}`)
       
       // 标记为已测试
       setTestResults(prev => ({ ...prev, [playerId]: true }))
@@ -84,7 +86,7 @@ const TestPage = () => {
       
       <div className="mb-6 flex justify-center space-x-4">
         <button
-          onClick={initTestData}
+          onClick={() => void initTestData()}
           className="px-4 py-2 bg-green-600 hover:bg-green-700 rounded-md"
         >
           初始化测试数据
@@ -108,32 +110,32 @@ const TestPage = () => {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {players.map((player) => (
-              <div key={player.id} className="bg-gray-700 p-4 rounded-lg">
+            {Array.from({ length: playerCount }, (_, index) => index + 1).map((playerId) => (
+              <div key={playerId} className="bg-gray-700 p-4 rounded-lg">
                 <div className="flex justify-between items-center mb-2">
-                  <h4 className="font-bold">玩家 {player.id}</h4>
+                  <h4 className="font-bold">玩家 {playerId}</h4>
                   <div className="flex space-x-1">
                     <button
-                      onClick={() => testPlayerLink(player.id)}
-                      className={`text-xs px-2 py-1 ${testResults[player.id] ? 'bg-green-600' : 'bg-blue-600'} hover:bg-blue-700 rounded`}
+                      onClick={() => void testPlayerLink(playerId)}
+                      className={`text-xs px-2 py-1 ${testResults[playerId] ? 'bg-green-600' : 'bg-blue-600'} hover:bg-blue-700 rounded`}
                     >
-                      {testResults[player.id] ? '已测试' : '测试链接'}
+                      {testResults[playerId] ? '已测试' : '测试链接'}
                     </button>
                   </div>
                 </div>
                 <a 
-                  href={generatePlayerLink(player.id)} 
+                  href={generatePlayerLink(playerId)} 
                   target="_blank" 
                   rel="noopener noreferrer"
                   className="block p-2 bg-blue-600 hover:bg-blue-700 rounded text-center"
                 >
-                  打开玩家 {player.id} 的视图
+                  打开玩家 {playerId} 的视图
                 </a>
                 <p className="text-xs mt-2 text-gray-400">
-                  链接: {generatePlayerLink(player.id)}
+                  链接: {generatePlayerLink(playerId)}
                 </p>
                 <p className="text-xs mt-1 text-gray-500">
-                  访问代码: {player.accessCode}
+                  加入状态: {joinedPlayerIds.includes(playerId) ? '已加入' : '未加入'}
                 </p>
               </div>
             ))}

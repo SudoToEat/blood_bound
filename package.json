@@ -8,7 +8,7 @@
     "build": "tsc && vite build",
     "build:production": "vite build",
     "start:production": "./start-production.sh",
-    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
+    "lint": "eslint . --ext js,cjs,ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview",
     "server": "node server/index.js",
     "dev:full": "concurrently \"npm run server\" \"npm run dev\""

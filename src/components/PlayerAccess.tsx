@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import { useGame } from '../context/GameContext';
 import { useParams, useNavigate } from 'react-router-dom';
 import PlayerView from './PlayerView';
-import LoadingSpinner from './ui/LoadingSpinner';
 import { logger } from '../utils/logger'
 
 export const PlayerAccess: React.FC = () => {

@@ -4,14 +4,12 @@
  * 生产环境只输出错误日志，开发环境输出所有日志
  */
 
-type LogLevel = 'log' | 'info' | 'warn' | 'error' | 'debug'
-
 class Logger {
   private isDevelopment: boolean
 
   constructor() {
     // 检测是否为开发环境
-    this.isDevelopment = import.meta.env.DEV || process.env.NODE_ENV !== 'production'
+    this.isDevelopment = import.meta.env.DEV
   }
 
   /**
