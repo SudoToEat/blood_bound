@@ -4,6 +4,7 @@ import { Server } from 'socket.io';
 import cors from 'cors';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { buildPlayerNameMap, mergePlayerNames } from './utils/playerNameUtils.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -253,25 +254,13 @@ app.post('/api/rooms/:roomId/restart', (req, res) => {
     return res.status(404).json({ error: '房间不存在' });
   }
 
-  // 在重置身份前缓存现有玩家的自定义姓名，按座位ID保存
-  const previousNames = new Map();
-  const collectNames = (players = []) => {
-    players.forEach(player => {
-      if (player?.name) {
-        previousNames.set(player.id, player.name);
-      }
-    });
-  };
-  collectNames(room.playerIdentities);
-  if (room.gameState?.players) {
-    collectNames(room.gameState.players);
-  }
+  const previousNames = buildPlayerNameMap(room.playerIdentities, room.gameState?.players);
 
   // 重新生成所有玩家身份
-  const newPlayerIdentities = generatePlayers(room.playerCount).map(player => {
-    const preservedName = previousNames.get(player.id);
-    return preservedName ? { ...player, name: preservedName } : player;
-  });
+  const newPlayerIdentities = mergePlayerNames(
+    generatePlayers(room.playerCount),
+    previousNames
+  );
   room.playerIdentities = newPlayerIdentities;
   room.gameState = {
     phase: 'playing',
