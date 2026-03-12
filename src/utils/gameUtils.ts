@@ -1,4 +1,4 @@
-import { Player, Faction, CharacterType, AbilityCardType } from '../types/gameTypes'
+import { Player, Faction, CharacterType } from '../types/gameTypes'
 
 // 打乱数组的函数
 function shuffleArray<T>(array: T[]): T[] {
@@ -68,8 +68,8 @@ export function generatePlayers(count: number): Player[] {
   const regularRolesCount = useInquisitor ? count - 1 : count
 
   // 平分到两个阵营
-  let phoenixCount = Math.floor(regularRolesCount / 2)
-  let gargoyleCount = Math.ceil(regularRolesCount / 2) // 使用ceil确保总数正确
+  const phoenixCount = Math.floor(regularRolesCount / 2)
+  const gargoyleCount = Math.ceil(regularRolesCount / 2) // 使用ceil确保总数正确
 
   // 创建阵营数组并打乱（不包括中立，调查官会单独处理）
   const factions: Faction[] = []

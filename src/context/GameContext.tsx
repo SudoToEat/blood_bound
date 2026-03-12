@@ -4,6 +4,7 @@ import { Player } from '../types/gameTypes'
 import { ApiService } from '../utils/apiService'
 import { socketService } from '../utils/socketService'
 import { logger } from '../utils/logger'
+import { getClientGamePhase } from '../utils/gameState'
 
 // 游戏状态类型
 export interface GameState {
@@ -85,7 +86,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         players = players.map((player: Player) => {
           if (!player.name) {
             const prevPlayer = previousPlayers.find(
-              (prev) => prev.id === player.id && prev.name
+              (prev: Player) => prev.id === player.id && prev.name
             )
             if (prevPlayer?.name) {
               return { ...player, name: prevPlayer.name }
@@ -168,6 +169,10 @@ function getInitialState(): GameState {
 export function GameProvider({ children }: { children: ReactNode }) {
   const [state, dispatch] = useReducer(gameReducer, getInitialState())
   const stateRef = useRef(state)
+
+  const syncClientGamePhase = (serverPhase?: string) => {
+    dispatch({ type: 'SET_GAME_PHASE', payload: getClientGamePhase(serverPhase) })
+  }
 
   useEffect(() => {
     stateRef.current = state
@@ -290,7 +295,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
       if (roomInfo.gameState && roomInfo.gameState.players) {
         logger.log('房间已有游戏数据，立即设置');
         dispatch({ type: 'UPDATE_GAME_DATA', payload: roomInfo.gameState })
-        dispatch({ type: 'SET_GAME_PHASE', payload: 'playing' })
+        syncClientGamePhase(roomInfo.gameState.phase)
       }
 
       // 连接WebSocket（在注册监听器之前先连接）
@@ -310,14 +315,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
           logger.log('游戏状态存在，phase:', roomState.gameState.phase);
           logger.log('游戏玩家数据:', roomState.gameState.players);
           dispatch({ type: 'UPDATE_GAME_DATA', payload: roomState.gameState })
-
-          // 如果游戏已开始，设置游戏阶段为playing
-          if (roomState.gameState.phase === 'playing') {
-            logger.log('✅ 设置游戏阶段为 playing');
-            dispatch({ type: 'SET_GAME_PHASE', payload: 'playing' })
-          } else {
-            logger.log('⚠️ 游戏阶段不是 playing，是:', roomState.gameState.phase);
-          }
+          syncClientGamePhase(roomState.gameState.phase)
         } else {
           logger.log('⚠️ roomState.gameState 不存在');
         }
@@ -336,10 +334,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
       socketService.onGameStateUpdated((gameState) => {
         logger.log('游戏状态更新:', gameState);
         dispatch({ type: 'UPDATE_GAME_DATA', payload: gameState })
-        // 如果游戏已开始，设置游戏阶段为playing
-        if (gameState.phase === 'playing') {
-          dispatch({ type: 'SET_GAME_PHASE', payload: 'playing' })
-        }
+        syncClientGamePhase(gameState.phase)
       })
 
       socketService.onPlayerAction((data) => {
@@ -397,7 +392,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
       // 更新本地状态
       if (result.data.gameState) {
         dispatch({ type: 'UPDATE_GAME_DATA', payload: result.data.gameState });
-        dispatch({ type: 'SET_GAME_PHASE', payload: 'playing' });
+        syncClientGamePhase(result.data.gameState.phase);
       }
     } catch (error) {
       logger.error('开始游戏失败:', error);
@@ -427,7 +422,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
       // 更新本地状态
       if (result.data.gameState) {
         dispatch({ type: 'UPDATE_GAME_DATA', payload: result.data.gameState });
-        dispatch({ type: 'SET_GAME_PHASE', payload: 'playing' });
+        syncClientGamePhase(result.data.gameState.phase);
       }
     } catch (error) {
       logger.error('重新开始游戏失败:', error);
@@ -492,8 +487,8 @@ export function GameProvider({ children }: { children: ReactNode }) {
         try {
           logger.log('检测到已保存的房间号，尝试重新连接:', state.roomId)
 
-          // 先调用 startGame 获取完整的游戏状态
-          const result = await ApiService.startGame(state.roomId)
+          // 只读取当前房间状态，避免刷新时意外推进游戏阶段
+          const result = await ApiService.getRoomInfo(state.roomId)
 
           // Check API call success
           if (!result.success) {
@@ -506,7 +501,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
           // 更新游戏数据
           if (result.data.gameState && result.data.gameState.players) {
             dispatch({ type: 'UPDATE_GAME_DATA', payload: result.data.gameState })
-            dispatch({ type: 'SET_GAME_PHASE', payload: 'playing' })
+            syncClientGamePhase(result.data.gameState.phase)
           }
 
           // 重新连接 WebSocket（主持人使用 playerId 0）
@@ -521,11 +516,16 @@ export function GameProvider({ children }: { children: ReactNode }) {
           socketService.onRoomState((roomState) => {
             logger.log('房间状态更新:', roomState)
             dispatch({ type: 'UPDATE_PLAYERS', payload: roomState.players })
+            if (roomState.gameState) {
+              dispatch({ type: 'UPDATE_GAME_DATA', payload: roomState.gameState })
+              syncClientGamePhase(roomState.gameState.phase)
+            }
           })
 
           socketService.onGameStateUpdated((gameState) => {
             logger.log('主持人收到游戏状态更新:', gameState)
             dispatch({ type: 'UPDATE_GAME_DATA', payload: gameState })
+            syncClientGamePhase(gameState.phase)
           })
 
           dispatch({ type: 'SET_CONNECTION_STATUS', payload: true })

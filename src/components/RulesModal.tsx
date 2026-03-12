@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { CharacterType, AbilityCardType } from '../types/gameTypes'
+import { CharacterType } from '../types/gameTypes'
 import { getCharacterName, getCharacterAbilityDescription } from '../utils/gameUtils'
 
 interface RulesModalProps {

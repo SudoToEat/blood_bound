@@ -1,18 +1,42 @@
-import React, { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import { useGame } from '../context/GameContext'
 import { useParams } from 'react-router-dom'
+import type { Player } from '../types/gameTypes'
+
+const EMPTY_PLAYERS: Player[] = []
+
+interface DebugInfo {
+  params: {
+    roomId?: string
+    playerId?: string
+  }
+  localStorage: Record<string, unknown>
+  allGameKeys: string[]
+  url: string
+  playersCount: number
+  currentPlayers: Array<{ id: number; accessCode?: string }>
+  userAgent: string
+  timestamp: string
+}
+
+interface DebugTestResult {
+  test: string
+  status: 'PASS' | 'FAIL' | 'ERROR'
+  details: string
+}
 
 const PlayerAccessDebug = () => {
   const { roomId, playerId } = useParams()
-  const { players, joinRoom } = useGame()
-  const [debugInfo, setDebugInfo] = useState<any>({})
-  const [testResults, setTestResults] = useState<any[]>([])
+  const { state, joinRoom } = useGame()
+  const playerDetails = state.gameData?.players ?? EMPTY_PLAYERS
+  const [debugInfo, setDebugInfo] = useState<DebugInfo | null>(null)
+  const [testResults, setTestResults] = useState<DebugTestResult[]>([])
 
   useEffect(() => {
     // 收集调试信息
     const collectDebugInfo = () => {
       const storageKeys = ['bloodbond_game_state', 'bloodbond_player_access']
-      const storageData: {[key: string]: any} = {}
+      const storageData: Record<string, unknown> = {}
       
       storageKeys.forEach(key => {
         try {
@@ -32,18 +56,18 @@ const PlayerAccessDebug = () => {
         localStorage: storageData,
         allGameKeys: gameKeys,
         url: window.location.href,
-        playersCount: players?.length || 0,
-        currentPlayers: players?.map(p => ({ id: p.id, accessCode: p.accessCode })) || [],
+        playersCount: playerDetails.length,
+        currentPlayers: playerDetails.map((player: Player) => ({ id: player.id, accessCode: player.accessCode })),
         userAgent: navigator.userAgent,
         timestamp: new Date().toISOString()
       })
     }
 
     collectDebugInfo()
-  }, [roomId, playerId, players])
+  }, [roomId, playerId, playerDetails])
 
-  const runTests = () => {
-    const results: any[] = []
+  const runTests = async () => {
+    const results: DebugTestResult[] = []
     
     // 测试1: 检查参数
     results.push({
@@ -71,18 +95,18 @@ const PlayerAccessDebug = () => {
     // 测试4: 检查当前玩家状态
     results.push({
       test: '当前玩家状态',
-      status: players.length > 0 ? 'PASS' : 'FAIL',
-      details: `当前玩家数: ${players.length}`
+      status: playerDetails.length > 0 ? 'PASS' : 'FAIL',
+      details: `当前玩家数: ${playerDetails.length}`
     })
 
     // 测试5: 尝试加入房间
     if (roomId && !isNaN(playerIdNum)) {
       try {
-        const success = joinRoom(roomId, playerIdNum)
+        await joinRoom(roomId, playerIdNum)
         results.push({
           test: '加入房间测试',
-          status: success ? 'PASS' : 'FAIL',
-          details: `joinRoom返回: ${success}`
+          status: 'PASS',
+          details: 'joinRoom 成功执行'
         })
       } catch (e) {
         results.push({
@@ -94,7 +118,7 @@ const PlayerAccessDebug = () => {
     }
 
     // 测试6: 检查玩家是否存在
-    const playerExists = players.find(p => p.id === playerIdNum)
+    const playerExists = playerDetails.find((player: Player) => player.id === playerIdNum)
     results.push({
       test: '玩家存在性',
       status: playerExists ? 'PASS' : 'FAIL',
@@ -138,9 +162,9 @@ const PlayerAccessDebug = () => {
             <div className="space-y-2 text-sm">
               <p><strong>房间ID:</strong> {roomId || '未提供'}</p>
               <p><strong>玩家ID:</strong> {playerId || '未提供'}</p>
-              <p><strong>当前玩家数:</strong> {players?.length || 0}</p>
+              <p><strong>当前玩家数:</strong> {playerDetails.length}</p>
               <p><strong>URL:</strong> {window.location.href}</p>
-              <p><strong>时间戳:</strong> {debugInfo.timestamp}</p>
+              <p><strong>时间戳:</strong> {debugInfo?.timestamp}</p>
             </div>
           </div>
 
@@ -149,7 +173,7 @@ const PlayerAccessDebug = () => {
             <h2 className="text-xl font-bold mb-4">操作</h2>
             <div className="space-y-2">
               <button
-                onClick={runTests}
+                onClick={() => void runTests()}
                 className="w-full px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded"
               >
                 运行测试
@@ -203,11 +227,11 @@ const PlayerAccessDebug = () => {
         </div>
 
         {/* 当前玩家列表 */}
-        {players.length > 0 && (
+        {playerDetails.length > 0 && (
           <div className="bg-gray-800 p-4 rounded-lg mt-6">
             <h2 className="text-xl font-bold mb-4">当前玩家列表</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {players.map(player => (
+              {playerDetails.map((player: Player) => (
                 <div key={player.id} className="bg-gray-700 p-3 rounded">
                   <p><strong>玩家 {player.id}</strong></p>
                   <p className="text-sm text-gray-400">访问代码: {player.accessCode}</p>
