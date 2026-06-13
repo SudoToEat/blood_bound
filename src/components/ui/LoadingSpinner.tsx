@@ -29,14 +29,14 @@ const LoadingSpinner = ({
     <div className={`flex flex-col items-center justify-center gap-4 ${className}`}>
       {/* 旋转动画 */}
       <div
-        className={`${sizeClasses[size]} animate-spin rounded-full border-amber-500 border-t-transparent`}
+        className={`${sizeClasses[size]} border-blue-600 border-t-transparent rounded-full animate-spin`}
         role="status"
         aria-label="加载中"
       />
 
       {/* 加载消息 */}
       {message && (
-        <p className={`${textSizeClasses[size]} animate-pulse text-center text-stone-300`}>
+        <p className={`${textSizeClasses[size]} text-gray-300 text-center animate-pulse`}>
           {message}
         </p>
       )}
@@ -45,7 +45,7 @@ const LoadingSpinner = ({
 
   if (fullScreen) {
     return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75">
+      <div className="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-50">
         {spinnerContent}
       </div>
     )

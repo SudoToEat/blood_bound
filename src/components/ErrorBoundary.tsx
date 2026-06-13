@@ -64,26 +64,26 @@ class ErrorBoundary extends Component<Props, State> {
 
       // 默认错误 UI
       return (
-        <div className="bb-page flex min-h-screen items-center justify-center p-4">
-          <div className="bb-panel w-full max-w-2xl p-8">
+        <div className="min-h-screen bg-gray-900 flex items-center justify-center p-4">
+          <div className="bg-gray-800 rounded-lg p-8 max-w-2xl w-full">
             <div className="text-center mb-6">
               <div className="text-6xl mb-4">😵</div>
-              <h1 className="bb-title mb-2 text-3xl text-red-300">糟糕！出错了</h1>
-              <p className="text-stone-400">应用遇到了一个意外错误</p>
+              <h1 className="text-3xl font-bold text-red-500 mb-2">糟糕！出错了</h1>
+              <p className="text-gray-400">应用遇到了一个意外错误</p>
             </div>
 
             {/* 错误详情（开发模式） */}
             {import.meta.env.DEV && this.state.error && (
-              <div className="mb-6 overflow-auto rounded border border-stone-700 bg-stone-950 p-4">
+              <div className="mb-6 bg-gray-900 rounded p-4 overflow-auto">
                 <h3 className="text-red-400 font-bold mb-2">错误信息：</h3>
-                <pre className="whitespace-pre-wrap text-sm text-stone-300">
+                <pre className="text-sm text-gray-300 whitespace-pre-wrap">
                   {this.state.error.toString()}
                 </pre>
 
                 {this.state.errorInfo && (
                   <>
                     <h3 className="text-red-400 font-bold mt-4 mb-2">错误堆栈：</h3>
-                    <pre className="whitespace-pre-wrap text-xs text-stone-400">
+                    <pre className="text-xs text-gray-400 whitespace-pre-wrap">
                       {this.state.errorInfo.componentStack}
                     </pre>
                   </>
@@ -95,20 +95,20 @@ class ErrorBoundary extends Component<Props, State> {
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
               <button
                 onClick={this.handleReset}
-                className="bb-button-blue"
+                className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-md transition-colors"
               >
                 刷新页面
               </button>
               <button
                 onClick={this.handleGoHome}
-                className="bb-button-secondary"
+                className="px-6 py-3 bg-gray-700 hover:bg-gray-600 text-white font-bold rounded-md transition-colors"
               >
                 返回首页
               </button>
             </div>
 
             {/* 帮助提示 */}
-            <div className="mt-6 text-center text-sm text-stone-500">
+            <div className="mt-6 text-center text-sm text-gray-500">
               <p>如果问题持续存在，请尝试：</p>
               <ul className="list-disc list-inside mt-2">
                 <li>清除浏览器缓存</li>

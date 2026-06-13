@@ -81,20 +81,20 @@ const TestPage = () => {
   }
 
   return (
-    <div className="bb-panel mx-auto w-full max-w-4xl p-6">
-      <h2 className="bb-title mb-6 text-center text-2xl">测试页面 - 多设备访问</h2>
+    <div className="bg-gray-800 p-6 rounded-lg shadow-lg w-full max-w-4xl mx-auto">
+      <h2 className="text-2xl font-bold mb-6 text-center">测试页面 - 多设备访问</h2>
       
       <div className="mb-6 flex justify-center space-x-4">
         <button
           onClick={() => void initTestData()}
-          className="bb-button-gold"
+          className="px-4 py-2 bg-green-600 hover:bg-green-700 rounded-md"
         >
           初始化测试数据
         </button>
         
         <button
           onClick={clearStorage}
-          className="bb-button-danger"
+          className="px-4 py-2 bg-red-600 hover:bg-red-700 rounded-md"
         >
           清除本地存储
         </button>
@@ -104,20 +104,20 @@ const TestPage = () => {
         <div>
           <div className="mb-4">
             <h3 className="text-xl font-bold mb-2">房间号: {roomId}</h3>
-            <p className="text-sm text-stone-400 mb-4">
+            <p className="text-sm text-gray-400 mb-4">
               以下是每个玩家的访问链接，点击可以在新窗口打开
             </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {Array.from({ length: playerCount }, (_, index) => index + 1).map((playerId) => (
-              <div key={playerId} className="bb-panel-muted p-4">
+              <div key={playerId} className="bg-gray-700 p-4 rounded-lg">
                 <div className="flex justify-between items-center mb-2">
                   <h4 className="font-bold">玩家 {playerId}</h4>
                   <div className="flex space-x-1">
                     <button
                       onClick={() => void testPlayerLink(playerId)}
-                      className={`rounded px-2 py-1 text-xs ${testResults[playerId] ? 'bg-emerald-700' : 'bg-blue-800'} hover:bg-blue-900`}
+                      className={`text-xs px-2 py-1 ${testResults[playerId] ? 'bg-green-600' : 'bg-blue-600'} hover:bg-blue-700 rounded`}
                     >
                       {testResults[playerId] ? '已测试' : '测试链接'}
                     </button>
@@ -127,23 +127,23 @@ const TestPage = () => {
                   href={generatePlayerLink(playerId)} 
                   target="_blank" 
                   rel="noopener noreferrer"
-                  className="block rounded border border-blue-400/30 bg-blue-800 p-2 text-center hover:bg-blue-900"
+                  className="block p-2 bg-blue-600 hover:bg-blue-700 rounded text-center"
                 >
                   打开玩家 {playerId} 的视图
                 </a>
-                <p className="text-xs mt-2 text-stone-400">
+                <p className="text-xs mt-2 text-gray-400">
                   链接: {generatePlayerLink(playerId)}
                 </p>
-                <p className="text-xs mt-1 text-stone-500">
+                <p className="text-xs mt-1 text-gray-500">
                   加入状态: {joinedPlayerIds.includes(playerId) ? '已加入' : '未加入'}
                 </p>
               </div>
             ))}
           </div>
           
-          <div className="bb-panel-muted mt-6 p-4">
+          <div className="mt-6 p-4 bg-gray-700 rounded-lg">
             <h3 className="text-lg font-bold mb-2">调试信息</h3>
-            <pre className="max-h-60 overflow-auto text-xs text-stone-400">
+            <pre className="text-xs text-gray-400 overflow-auto max-h-60">
               {JSON.stringify(debugInfo, null, 2)}
             </pre>
           </div>

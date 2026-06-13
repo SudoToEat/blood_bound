@@ -27,23 +27,23 @@ const CharacterDemo: React.FC = () => {
   ]
 
   return (
-    <div className="bb-page min-h-screen py-8">
+    <div className="min-h-screen bg-gray-100 py-8">
       <div className="max-w-7xl mx-auto px-4">
         {/* 标题 */}
         <div className="text-center mb-8">
-          <h1 className="bb-title mb-2 text-4xl">血契猎杀 - 角色图片演示</h1>
-          <p className="text-stone-400">展示游戏中的角色图片和卡片功能</p>
+          <h1 className="text-4xl font-bold text-gray-800 mb-2">血契猎杀 - 角色图片演示</h1>
+          <p className="text-gray-600">展示游戏中的角色图片和卡片功能</p>
         </div>
 
         {/* 标签页导航 */}
         <div className="flex justify-center mb-8">
-          <div className="bb-panel-muted flex space-x-1 p-1">
+          <div className="flex space-x-1 bg-white rounded-lg p-1 shadow-md">
             <button
               onClick={() => setActiveTab('cards')}
               className={`px-4 py-2 rounded-md font-medium transition-colors ${
                 activeTab === 'cards' 
-                  ? 'bg-amber-800 text-white'
-                  : 'text-stone-400 hover:text-stone-100'
+                  ? 'bg-blue-500 text-white' 
+                  : 'text-gray-600 hover:text-gray-800'
               }`}
             >
               角色卡片
@@ -52,8 +52,8 @@ const CharacterDemo: React.FC = () => {
               onClick={() => setActiveTab('selector')}
               className={`px-4 py-2 rounded-md font-medium transition-colors ${
                 activeTab === 'selector' 
-                  ? 'bg-amber-800 text-white'
-                  : 'text-stone-400 hover:text-stone-100'
+                  ? 'bg-blue-500 text-white' 
+                  : 'text-gray-600 hover:text-gray-800'
               }`}
             >
               角色选择器
@@ -62,8 +62,8 @@ const CharacterDemo: React.FC = () => {
               onClick={() => setActiveTab('gallery')}
               className={`px-4 py-2 rounded-md font-medium transition-colors ${
                 activeTab === 'gallery' 
-                  ? 'bg-amber-800 text-white'
-                  : 'text-stone-400 hover:text-stone-100'
+                  ? 'bg-blue-500 text-white' 
+                  : 'text-gray-600 hover:text-gray-800'
               }`}
             >
               角色图鉴
@@ -72,10 +72,10 @@ const CharacterDemo: React.FC = () => {
         </div>
 
         {/* 内容区域 */}
-        <div className="bb-panel p-6">
+        <div className="bg-white rounded-lg shadow-lg p-6">
           {activeTab === 'cards' && (
             <div>
-              <h2 className="bb-title mb-6 text-center text-2xl">角色卡片展示</h2>
+              <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">角色卡片展示</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                 {sampleCharacters.map(({ type, faction }) => (
                   <CharacterCard
@@ -92,15 +92,15 @@ const CharacterDemo: React.FC = () => {
 
           {activeTab === 'selector' && (
             <div>
-              <h2 className="bb-title mb-6 text-center text-2xl">角色选择器</h2>
+              <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">角色选择器</h2>
               <CharacterSelector
                 selectedCharacters={selectedCharacters}
                 onCharacterToggle={handleCharacterToggle}
                 maxPlayers={8}
               />
-              <div className="bb-panel-muted mt-6 p-4">
-                <h3 className="mb-2 font-bold text-stone-200">已选择的角色：</h3>
-                <p className="text-stone-400">
+              <div className="mt-6 p-4 bg-gray-50 rounded-lg">
+                <h3 className="font-bold text-gray-800 mb-2">已选择的角色：</h3>
+                <p className="text-gray-600">
                   {selectedCharacters.length > 0 
                     ? selectedCharacters.map(c => c).join(', ')
                     : '暂无选择'
@@ -118,12 +118,12 @@ const CharacterDemo: React.FC = () => {
         </div>
 
         {/* 功能说明 */}
-        <div className="bb-panel mt-8 p-6">
-          <h3 className="bb-title mb-4 text-xl">功能说明</h3>
+        <div className="mt-8 bg-white rounded-lg shadow-lg p-6">
+          <h3 className="text-xl font-bold text-gray-800 mb-4">功能说明</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <h4 className="mb-2 font-bold text-stone-200">角色卡片</h4>
-              <ul className="space-y-1 text-sm text-stone-400">
+              <h4 className="font-bold text-gray-800 mb-2">角色卡片</h4>
+              <ul className="text-sm text-gray-600 space-y-1">
                 <li>• 显示角色图片、名称和能力</li>
                 <li>• 支持揭示/隐藏状态切换</li>
                 <li>• 阵营标识和等级显示</li>
@@ -131,8 +131,8 @@ const CharacterDemo: React.FC = () => {
               </ul>
             </div>
             <div>
-              <h4 className="mb-2 font-bold text-stone-200">角色选择器</h4>
-              <ul className="space-y-1 text-sm text-stone-400">
+              <h4 className="font-bold text-gray-800 mb-2">角色选择器</h4>
+              <ul className="text-sm text-gray-600 space-y-1">
                 <li>• 可视化角色选择界面</li>
                 <li>• 支持多选和取消选择</li>
                 <li>• 角色详情查看功能</li>
@@ -140,8 +140,8 @@ const CharacterDemo: React.FC = () => {
               </ul>
             </div>
             <div>
-              <h4 className="mb-2 font-bold text-stone-200">角色图鉴</h4>
-              <ul className="space-y-1 text-sm text-stone-400">
+              <h4 className="font-bold text-gray-800 mb-2">角色图鉴</h4>
+              <ul className="text-sm text-gray-600 space-y-1">
                 <li>• 完整的角色信息展示</li>
                 <li>• 按阵营筛选功能</li>
                 <li>• 详细角色能力说明</li>
@@ -149,8 +149,8 @@ const CharacterDemo: React.FC = () => {
               </ul>
             </div>
             <div>
-              <h4 className="mb-2 font-bold text-stone-200">图片系统</h4>
-              <ul className="space-y-1 text-sm text-stone-400">
+              <h4 className="font-bold text-gray-800 mb-2">图片系统</h4>
+              <ul className="text-sm text-gray-600 space-y-1">
                 <li>• 支持PNG、JPG、SVG格式</li>
                 <li>• 自动错误处理和默认图片</li>
                 <li>• 响应式图片加载</li>
@@ -164,4 +164,4 @@ const CharacterDemo: React.FC = () => {
   )
 }
 
-export default CharacterDemo
+export default CharacterDemo 

@@ -53,10 +53,10 @@ const PlayerCard = memo(({ player, onClick, showCharacterImage = false, onToggle
 
   // 获取展示指示器的颜色
   const getRevealColor = (reveal: 'red' | 'blue' | 'unknown' | undefined) => {
-    if (reveal === 'red') return 'border-red-400/40 bg-red-700'
-    if (reveal === 'blue') return 'border-blue-400/40 bg-blue-800'
-    if (reveal === 'unknown') return 'border-stone-400/40 bg-stone-700'
-    return ''
+    if (reveal === 'red') return 'bg-red-500'
+    if (reveal === 'blue') return 'bg-blue-500'
+    if (reveal === 'unknown') return 'bg-gray-500'
+    return 'bg-gray-600 border border-gray-500' // 默认空状态，使用更深的颜色和边框
   }
 
   // 获取展示指示器的内容
@@ -69,7 +69,7 @@ const PlayerCard = memo(({ player, onClick, showCharacterImage = false, onToggle
 
   return (
     <div
-      className="bb-panel-muted relative cursor-pointer p-4 transition-colors hover:border-amber-500/40"
+      className="bg-gray-800 rounded-lg p-4 cursor-pointer hover:bg-gray-700 transition-colors relative"
       onClick={onClick}
     >
       {/* 在线状态指示器 - 仅在需要时显示 */}
@@ -77,7 +77,7 @@ const PlayerCard = memo(({ player, onClick, showCharacterImage = false, onToggle
         <div className="absolute top-2 right-2 flex items-center gap-1">
           <div
             className={`w-3 h-3 rounded-full ${
-              player.isOnline ? 'bg-emerald-400 animate-pulse' : 'bg-stone-600'
+              player.isOnline ? 'bg-green-500 animate-pulse' : 'bg-gray-500'
             }`}
             title={player.isOnline ? '在线' : '离线'}
           />
@@ -86,11 +86,11 @@ const PlayerCard = memo(({ player, onClick, showCharacterImage = false, onToggle
 
       <div className={`flex justify-between items-center mb-2 ${showOnlineStatus ? 'pr-4' : ''}`}>
         <div className="flex items-center gap-2">
-          <h3 className="text-lg font-bold text-stone-100">{player.name || `玩家 ${player.id}`}</h3>
+          <h3 className="text-lg font-bold">{player.name || `玩家 ${player.id}`}</h3>
           {/* 诅咒卡状态指示器 */}
           {player.hasCurse && (
             <div
-              className="rounded border border-amber-500/30 bg-amber-950/50 px-2 py-0.5 text-xs font-bold text-amber-200"
+              className="px-2 py-0.5 rounded text-xs font-bold bg-orange-600 text-white"
               title="持有诅咒卡"
             >
               被诅咒
@@ -103,7 +103,7 @@ const PlayerCard = memo(({ player, onClick, showCharacterImage = false, onToggle
             return (
               <div
                 key={index}
-                className={`bb-token ${reveal ? '' : 'bb-token-empty'} ${getRevealColor(reveal)}`}
+                className={`w-4 h-4 rounded-full flex items-center justify-center ${getRevealColor(reveal)}`}
                 title={reveal ? `展示: ${reveal === 'red' ? '红色' : reveal === 'blue' ? '蓝色' : '问号'}` : '未展示'}
               >
                 {getRevealContent(reveal)}
@@ -117,7 +117,7 @@ const PlayerCard = memo(({ player, onClick, showCharacterImage = false, onToggle
       {showCharacterImage && (
         <div className="flex justify-center mb-3">
           <div className="relative">
-            <div className="h-16 w-16 overflow-hidden rounded-full border-2 border-amber-300/50 bg-stone-950">
+            <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-gray-300">
               <img
                 src={characterInfo.image}
                 alt={characterInfo.name}
@@ -130,7 +130,7 @@ const PlayerCard = memo(({ player, onClick, showCharacterImage = false, onToggle
             </div>
             {/* 角色名称标签 */}
             <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2">
-              <span className="rounded-full border border-amber-500/30 bg-stone-950 px-2 py-1 text-xs text-stone-100">
+              <span className="bg-gray-700 text-white text-xs px-2 py-1 rounded-full">
                 {characterInfo.name}
               </span>
             </div>
@@ -138,19 +138,19 @@ const PlayerCard = memo(({ player, onClick, showCharacterImage = false, onToggle
         </div>
       )}
 
-      <div className="text-sm text-stone-400">
-        <div className={`${player.revealedFaction ? characterInfo.factionColor : 'text-stone-500'} font-semibold mb-1`}>
+      <div className="text-sm text-gray-400">
+        <div className={`${player.revealedFaction ? characterInfo.factionColor : ''} font-semibold mb-1`}>
           阵营: {player.revealedFaction ? characterInfo.factionName : '未揭示'}
         </div>
 
-        <div className="font-semibold text-stone-300">
+        <div className="font-semibold">
           等级: {player.revealedRank ? player.rank : '未揭示'}
         </div>
 
         {/* 如果阵营或等级已揭示，显示角色 */}
         {isRevealed && (
           <div className="mt-2 text-xs">
-            <div className="text-amber-300">
+            <div className="text-yellow-400">
               角色: {characterInfo.name}
             </div>
           </div>
@@ -159,10 +159,10 @@ const PlayerCard = memo(({ player, onClick, showCharacterImage = false, onToggle
 
       {player.abilityCards.length > 0 && (
         <div className="mt-2 text-xs">
-          <span className="text-stone-400">能力卡:</span>
+          <span className="text-gray-400">能力卡:</span>
           <div className="flex flex-wrap gap-1 mt-1">
             {player.abilityCards.map((card, index) => (
-              <span key={index} className="rounded-md border border-stone-700 bg-stone-950/60 px-2 py-1">
+              <span key={index} className="px-2 py-1 bg-gray-700 rounded-md">
                 {card === 'sword' ? '长剑' :
                  card === 'fan' ? '折扇' :
                  card === 'staff' ? '法杖' :
@@ -178,17 +178,17 @@ const PlayerCard = memo(({ player, onClick, showCharacterImage = false, onToggle
       {/* 展示线索详情，避免主持人遗漏 */}
       {player.reveals && player.reveals.length > 0 && (
         <div className="mt-3">
-          <span className="text-xs text-stone-400">已展示线索:</span>
+          <span className="text-xs text-gray-400">已展示线索:</span>
           <div className="flex flex-wrap gap-2 mt-1">
             {player.reveals.map((reveal, index) => (
               <span
                 key={`reveal-detail-${player.id}-${index}`}
-                className={`rounded-full border px-2 py-1 text-xs font-semibold ${
+                className={`px-2 py-1 rounded-full text-xs font-semibold ${
                   reveal === 'red'
-                    ? 'border-red-400/30 bg-red-700 text-white'
+                    ? 'bg-red-600 text-white'
                     : reveal === 'blue'
-                      ? 'border-blue-400/30 bg-blue-800 text-white'
-                      : 'border-stone-400/30 bg-stone-700 text-white'
+                      ? 'bg-blue-600 text-white'
+                      : 'bg-gray-600 text-white'
                 }`}
               >
                 {reveal === 'red' ? '红色' : reveal === 'blue' ? '蓝色' : '问号'}
@@ -203,10 +203,10 @@ const PlayerCard = memo(({ player, onClick, showCharacterImage = false, onToggle
         {onToggleReveal && (
           <button
             onClick={handleToggleReveal}
-            className={`w-full ${
+            className={`w-full py-1 px-2 rounded text-sm transition-colors ${
               isRevealed
-                ? 'bb-button-secondary'
-                : 'bb-button-gold'
+                ? 'bg-yellow-600 hover:bg-yellow-700'
+                : 'bg-green-600 hover:bg-green-700'
             }`}
           >
             {isRevealed ? '🙈 隐藏身份' : '👀 揭示身份'}
@@ -217,7 +217,7 @@ const PlayerCard = memo(({ player, onClick, showCharacterImage = false, onToggle
         {onHeal && player.reveals && player.reveals.length > 0 && (
           <button
             onClick={handleHeal}
-            className="bb-button-secondary w-full py-1 text-sm"
+            className="w-full py-1 px-2 bg-purple-600 hover:bg-purple-700 rounded text-sm transition-colors"
           >
             💚 恢复血量
           </button>
@@ -228,12 +228,12 @@ const PlayerCard = memo(({ player, onClick, showCharacterImage = false, onToggle
           <button
             onClick={handleToggleCurseDetail}
             disabled={forceShowCurse}
-            className={`w-full rounded-md border px-2 py-2 text-sm font-semibold transition-colors ${
+            className={`w-full py-1 px-2 rounded text-sm transition-colors ${
               shouldShowCurse
                 ? player.hasCurse === 'real'
-                  ? 'border-orange-400/40 bg-orange-700 text-white hover:bg-orange-800'
-                  : 'border-purple-400/40 bg-purple-800 text-white hover:bg-purple-900'
-                : 'border-amber-400/40 bg-amber-800 text-amber-50 hover:bg-amber-900'
+                  ? 'bg-orange-600 hover:bg-orange-700'
+                  : 'bg-purple-600 hover:bg-purple-700'
+                : 'bg-orange-500 hover:bg-orange-600'
             } ${forceShowCurse ? 'cursor-not-allowed opacity-90' : ''}`}
           >
             {shouldShowCurse

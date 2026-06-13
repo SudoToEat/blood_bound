@@ -115,11 +115,11 @@ export const PlayerAccess: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="bb-page flex min-h-screen items-center justify-center p-4">
-        <div className="bb-panel mx-auto max-w-md p-6 text-center">
-          <div className="mx-auto mb-4 h-12 w-12 animate-spin rounded-full border-2 border-amber-500 border-t-transparent"></div>
-          <h2 className="bb-title mb-2 text-xl">正在加入房间...</h2>
-          <p className="text-stone-400">请稍候，正在连接到游戏服务器</p>
+      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
+        <div className="max-w-md mx-auto p-6 bg-gray-800 rounded-lg shadow-lg text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <h2 className="text-xl font-semibold text-white mb-2">正在加入房间...</h2>
+          <p className="text-gray-400">请稍候，正在连接到游戏服务器</p>
         </div>
       </div>
     );
@@ -127,24 +127,24 @@ export const PlayerAccess: React.FC = () => {
 
   if (error) {
     return (
-      <div className="bb-page flex min-h-screen items-center justify-center p-4">
-        <div className="bb-panel mx-auto max-w-md p-6">
+      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
+        <div className="max-w-md mx-auto p-6 bg-gray-800 rounded-lg shadow-lg">
           <div className="text-center mb-6">
             <div className="text-red-500 text-6xl mb-4">⚠️</div>
-            <h2 className="bb-title mb-2 text-xl">无法加入房间</h2>
-            <p className="mb-4 text-stone-400">{error}</p>
+            <h2 className="text-xl font-semibold text-white mb-2">无法加入房间</h2>
+            <p className="text-gray-400 mb-4">{error}</p>
           </div>
 
           <div className="space-y-3">
             <button
               onClick={handleRetry}
-              className="bb-button-blue w-full"
+              className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
             >
               重试
             </button>
             <button
               onClick={handleGoHome}
-              className="bb-button-secondary w-full"
+              className="w-full bg-gray-600 text-white py-2 px-4 rounded-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
             >
               返回主页
             </button>
@@ -152,10 +152,10 @@ export const PlayerAccess: React.FC = () => {
 
           {debugInfo && (
             <details className="mt-6">
-              <summary className="cursor-pointer text-sm text-stone-400 hover:text-stone-200">
+              <summary className="cursor-pointer text-sm text-gray-400 hover:text-gray-200">
                 调试信息
               </summary>
-              <div className="bb-panel-muted mt-2 p-3 text-xs text-stone-300">
+              <div className="mt-2 p-3 bg-gray-700 rounded text-xs text-gray-300">
                 <pre>{JSON.stringify(debugInfo, null, 2)}</pre>
               </div>
             </details>
@@ -173,7 +173,7 @@ export const PlayerAccess: React.FC = () => {
       // 找到玩家身份，显示身份信息，并传递所有玩家数据
       logger.log('渲染玩家身份视图');
       return (
-        <div className="bb-page flex min-h-screen items-center justify-center p-4">
+        <div className="min-h-screen bg-gray-900 flex items-center justify-center p-4">
           <PlayerView
             player={playerObj}
             allPlayers={state.gameData.players}
@@ -194,17 +194,17 @@ export const PlayerAccess: React.FC = () => {
     logger.log('state.playerId:', state.playerId);
 
     return (
-      <div className="bb-page flex min-h-screen items-center justify-center p-4">
-        <div className="bb-panel mx-auto max-w-md p-6">
+      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
+        <div className="max-w-md mx-auto p-6 bg-gray-800 rounded-lg shadow-lg">
           <div className="text-center mb-6">
             <div className="text-green-500 text-6xl mb-4">✅</div>
-            <h2 className="bb-title mb-2 text-xl">成功加入房间！</h2>
-            <p className="text-stone-400">房间号: {state.roomId}</p>
-            <p className="text-stone-400">玩家ID: {state.playerId}</p>
-            <p className="mt-2 text-sm text-stone-500">游戏阶段: {state.gamePhase}</p>
+            <h2 className="text-xl font-semibold text-white mb-2">成功加入房间！</h2>
+            <p className="text-gray-400">房间号: {state.roomId}</p>
+            <p className="text-gray-400">玩家ID: {state.playerId}</p>
+            <p className="text-sm text-gray-500 mt-2">游戏阶段: {state.gamePhase}</p>
           </div>
 
-          <div className="mb-6 rounded-lg border border-blue-500/30 bg-blue-950/50 p-4">
+          <div className="bg-blue-900 border border-blue-700 rounded-lg p-4 mb-6">
             <h3 className="font-semibold text-blue-300 mb-2">连接状态</h3>
             <div className="flex items-center space-x-2">
               <div className={`w-3 h-3 rounded-full ${state.isConnected ? 'bg-green-500' : 'bg-red-500'}`}></div>
@@ -214,19 +214,19 @@ export const PlayerAccess: React.FC = () => {
             </div>
           </div>
 
-          <div className="bb-panel-muted mb-6 p-4">
-            <h3 className="font-semibold text-stone-200 mb-2">房间信息</h3>
-            <p className="text-sm text-stone-400">当前玩家数: {state.players.length}</p>
-            <p className="text-sm text-stone-400">总玩家数: {state.playerCount}</p>
+          <div className="bg-gray-700 border border-gray-600 rounded-lg p-4 mb-6">
+            <h3 className="font-semibold text-gray-200 mb-2">房间信息</h3>
+            <p className="text-sm text-gray-400">当前玩家数: {state.players.length}</p>
+            <p className="text-sm text-gray-400">总玩家数: {state.playerCount}</p>
             {state.players.length > 0 && (
-              <p className="text-sm text-stone-400">
+              <p className="text-sm text-gray-400">
                 已加入玩家: {state.players.join(', ')}
               </p>
             )}
           </div>
 
           {/* 调试信息 */}
-          <div className="mb-6 rounded-lg border border-amber-500/30 bg-amber-950/40 p-4">
+          <div className="bg-yellow-900 border border-yellow-700 rounded-lg p-4 mb-6">
             <h3 className="font-semibold text-yellow-300 mb-2">调试信息</h3>
             <p className="text-xs text-yellow-200">gameData 存在: {state.gameData ? '是' : '否'}</p>
             {state.gameData && (
@@ -242,12 +242,12 @@ export const PlayerAccess: React.FC = () => {
           </div>
 
           <div className="text-center">
-            <p className="text-sm text-stone-400 mb-4">
+            <p className="text-sm text-gray-400 mb-4">
               等待游戏主持人开始游戏...
             </p>
             <button
               onClick={handleGoHome}
-              className="bb-button-secondary"
+              className="bg-gray-600 text-white py-2 px-4 rounded-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
             >
               返回主页
             </button>

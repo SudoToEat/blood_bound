@@ -91,18 +91,18 @@ function MainApp() {
   };
 
   return (
-    <div className="bb-page">
-      <div className="bb-shell flex min-h-screen flex-col items-center">
-        <header className="mb-8 text-center">
-          <h1 className="bb-title text-5xl text-red-200">鲜血盟约</h1>
-          <h2 className="mt-1 text-xl text-red-400">Blood Bound</h2>
+    <div className="min-h-screen bg-gray-900 text-white">
+      <div className="min-h-screen flex flex-col items-center justify-center p-4">
+        <header className="mb-8">
+          <h1 className="text-4xl font-bold text-red-600">鲜血盟约</h1>
+          <h2 className="text-xl text-red-400">Blood Bound</h2>
         </header>
 
-        <main className="w-full max-w-6xl flex-1">
+        <main className="w-full max-w-4xl">
           {gameStage === 'setup' && (
             <div className="flex flex-col items-center">
               {error && (
-                <div className="mb-4 rounded-md border border-red-700/50 bg-red-950/70 p-3 text-red-100">
+                <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
                   {error}
                 </div>
               )}
@@ -112,7 +112,7 @@ function MainApp() {
               />
               <button
                 onClick={() => setShowRules(true)}
-                className="bb-button-secondary mt-4"
+                className="mt-4 px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-md"
                 disabled={isLoading}
               >
                 查看游戏规则
@@ -134,7 +134,7 @@ function MainApp() {
 
         {showRules && <RulesModal onClose={() => setShowRules(false)} />}
 
-        <footer className="mt-8 text-sm text-stone-500">
+        <footer className="mt-8 text-sm text-gray-400">
           &copy; {new Date().getFullYear()} 鲜血盟约 - 本地网页版
         </footer>
       </div>

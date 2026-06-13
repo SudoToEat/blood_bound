@@ -21,22 +21,22 @@ const ErrorMessage = ({
 }: ErrorMessageProps) => {
   const variantStyles = {
     error: {
-      bg: 'bg-red-950/40',
-      border: 'border-red-500/50',
+      bg: 'bg-red-900 bg-opacity-20',
+      border: 'border-red-600',
       titleColor: 'text-red-400',
       textColor: 'text-red-300',
       icon: '❌'
     },
     warning: {
-      bg: 'bg-amber-950/40',
-      border: 'border-amber-500/50',
-      titleColor: 'text-amber-300',
-      textColor: 'text-amber-200',
+      bg: 'bg-yellow-900 bg-opacity-20',
+      border: 'border-yellow-600',
+      titleColor: 'text-yellow-400',
+      textColor: 'text-yellow-300',
       icon: '⚠️'
     },
     info: {
-      bg: 'bg-blue-950/40',
-      border: 'border-blue-500/50',
+      bg: 'bg-blue-900 bg-opacity-20',
+      border: 'border-blue-600',
       titleColor: 'text-blue-400',
       textColor: 'text-blue-300',
       icon: 'ℹ️'
@@ -47,7 +47,7 @@ const ErrorMessage = ({
 
   return (
     <div
-      className={`${styles.bg} ${styles.border} rounded-lg border p-6 shadow-2xl ${className}`}
+      className={`${styles.bg} ${styles.border} border-2 rounded-lg p-6 ${className}`}
       role="alert"
     >
       {/* 头部区域 */}
@@ -73,7 +73,7 @@ const ErrorMessage = ({
         {onClose && (
           <button
             onClick={onClose}
-            className="text-stone-400 transition-colors hover:text-white"
+            className="text-gray-400 hover:text-white transition-colors"
             aria-label="关闭"
           >
             <svg
@@ -99,7 +99,7 @@ const ErrorMessage = ({
         <div className="flex justify-end">
           <button
             onClick={onRetry}
-            className="bb-button-blue"
+            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-md transition-colors"
           >
             重试
           </button>

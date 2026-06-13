@@ -56,26 +56,26 @@ export const QRCodeDisplay = memo<QRCodeDisplayProps>(({
   return (
     <div className="flex flex-col items-center space-y-2">
       <div className="text-center">
-        <h3 className="text-base font-semibold text-stone-200 mb-1">{title}</h3>
-        {description && <p className="text-xs text-stone-500">{description}</p>}
+        <h3 className="text-base font-semibold text-gray-800 mb-1">{title}</h3>
+        {description && <p className="text-xs text-gray-600">{description}</p>}
       </div>
-      <div className="flex flex-col items-center rounded-lg border border-amber-500/30 bg-stone-100 p-2 shadow-lg">
+      <div className="bg-white p-2 rounded-lg border flex flex-col items-center">
         {qrCodeUrl && (
           <img src={qrCodeUrl} alt="QR Code" className="w-28 h-28" />
         )}
       </div>
-      <div className="mt-1 flex w-full items-center justify-center gap-2">
-        <span className="min-w-0 break-all text-xs text-stone-500">{url}</span>
+      <div className="flex items-center space-x-2 mt-1">
+        <span className="text-xs text-gray-700 break-all">{url}</span>
         <button
           onClick={openPlayerLink}
-          className="rounded border border-blue-400/30 bg-blue-800 px-2 py-1 text-xs text-white hover:bg-blue-900"
+          className="px-2 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700"
           title="在新窗口打开"
         >
           打开
         </button>
         <button
           onClick={copyToClipboard}
-          className={`rounded border px-2 py-1 text-xs ${copied ? 'border-emerald-400/30 bg-emerald-700 text-white' : 'border-stone-400/30 bg-stone-700 text-white hover:bg-stone-800'}`}
+          className={`px-2 py-1 text-xs rounded ${copied ? 'bg-green-600 text-white' : 'bg-gray-600 text-white hover:bg-gray-700'}`}
           title="复制链接"
         >
           {copied ? '已复制' : '复制'}
