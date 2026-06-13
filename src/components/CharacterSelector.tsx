@@ -46,8 +46,8 @@ export const CharacterSelector: React.FC<CharacterSelectorProps> = ({
   return (
     <div className={`space-y-4 ${className}`}>
       <div className="text-center">
-        <h3 className="text-lg font-bold text-gray-800 mb-2">选择角色</h3>
-        <p className="text-sm text-gray-600">
+        <h3 className="bb-title mb-2 text-lg">选择角色</h3>
+        <p className="text-sm text-stone-400">
           已选择 {selectedCharacters.length}/{maxPlayers} 个角色
         </p>
       </div>
@@ -64,7 +64,7 @@ export const CharacterSelector: React.FC<CharacterSelectorProps> = ({
               key={characterType}
               className={`relative cursor-pointer transition-all duration-200 ${
                 isSelected
-                  ? 'ring-2 ring-blue-500 scale-105'
+                  ? 'scale-105 ring-2 ring-amber-500'
                   : isDisabled
                     ? 'opacity-50 cursor-not-allowed'
                     : 'hover:scale-105 hover:shadow-lg'
@@ -73,7 +73,7 @@ export const CharacterSelector: React.FC<CharacterSelectorProps> = ({
             >
               {/* 角色缩略图 */}
               <div className="relative">
-                <div className="w-16 h-16 mx-auto rounded-full overflow-hidden border-2 border-gray-300">
+                <div className="mx-auto h-16 w-16 overflow-hidden rounded-full border-2 border-amber-300/40 bg-stone-950">
                   <img
                     src={characterImage}
                     alt={characterName}
@@ -87,7 +87,7 @@ export const CharacterSelector: React.FC<CharacterSelectorProps> = ({
 
                 {/* 选择状态指示器 */}
                 {isSelected && (
-                  <div className="absolute -top-1 -right-1 w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center">
+                  <div className="absolute -top-1 -right-1 flex h-6 w-6 items-center justify-center rounded-full border border-amber-300/50 bg-amber-700">
                     <span className="text-white text-xs">✓</span>
                   </div>
                 )}
@@ -95,8 +95,8 @@ export const CharacterSelector: React.FC<CharacterSelectorProps> = ({
 
               {/* 角色名称 */}
               <div className="text-center mt-2">
-                <p className="text-xs font-medium text-gray-800">{characterName}</p>
-                <p className="text-xs text-gray-500">等级 {characterType}</p>
+                <p className="text-xs font-medium text-stone-200">{characterName}</p>
+                <p className="text-xs text-stone-500">等级 {characterType}</p>
               </div>
 
               {/* 详细信息按钮 */}
@@ -107,7 +107,7 @@ export const CharacterSelector: React.FC<CharacterSelectorProps> = ({
                   setShowDetails(showDetails === characterType ? null : characterType)
                 }}
               >
-                <div className="absolute inset-0 bg-black bg-opacity-20 rounded-full flex items-center justify-center">
+                <div className="absolute inset-0 flex items-center justify-center rounded-full bg-black/40">
                   <span className="text-white text-xs">详情</span>
                 </div>
               </button>
@@ -118,13 +118,13 @@ export const CharacterSelector: React.FC<CharacterSelectorProps> = ({
 
       {/* 详细信息模态框 */}
       {showDetails && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-md mx-4">
+        <div className="bb-modal-backdrop">
+          <div className="bb-panel mx-4 max-w-md p-6">
             <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-bold">角色详情</h3>
+              <h3 className="bb-title text-lg">角色详情</h3>
               <button
                 onClick={() => setShowDetails(null)}
-                className="text-gray-500 hover:text-gray-700"
+                className="bb-icon-button h-8 w-8"
               >
                 ✕
               </button>
@@ -133,13 +133,13 @@ export const CharacterSelector: React.FC<CharacterSelectorProps> = ({
             {showDetails !== CharacterType.Inquisitor && (
               <div className="flex justify-center mb-4 space-x-2">
                 <button
-                  className={`px-3 py-1 rounded ${detailFaction === Faction.Phoenix ? 'bg-red-500 text-white' : 'bg-gray-200 text-gray-700'}`}
+                  className={`rounded border px-3 py-1 ${detailFaction === Faction.Phoenix ? 'border-red-400/40 bg-red-800 text-white' : 'border-stone-600 bg-stone-900 text-stone-300'}`}
                   onClick={() => setDetailFaction(Faction.Phoenix)}
                 >
                   鳳凰氏族
                 </button>
                 <button
-                  className={`px-3 py-1 rounded ${detailFaction === Faction.Gargoyle ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700'}`}
+                  className={`rounded border px-3 py-1 ${detailFaction === Faction.Gargoyle ? 'border-blue-400/40 bg-blue-800 text-white' : 'border-stone-600 bg-stone-900 text-stone-300'}`}
                   onClick={() => setDetailFaction(Faction.Gargoyle)}
                 >
                   石像鬼氏族

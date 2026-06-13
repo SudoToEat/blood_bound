@@ -43,11 +43,11 @@ const PlayerSetup = ({ onStartGame, isLoading: externalLoading = false }: Player
   }
 
   return (
-    <div className="bg-gray-800 p-6 rounded-lg shadow-lg w-full max-w-md mx-auto">
-      <h2 className="text-2xl font-bold mb-6 text-center">游戏设置</h2>
+    <div className="bb-panel w-full max-w-md p-6 mx-auto">
+      <h2 className="bb-title text-2xl mb-6 text-center">游戏设置</h2>
       
       <div className="mb-6">
-        <label className="block text-sm font-medium mb-2" htmlFor="playerCount">
+        <label className="block text-sm font-medium text-stone-300 mb-2" htmlFor="playerCount">
           选择玩家人数 (6-12人)
         </label>
         
@@ -60,16 +60,16 @@ const PlayerSetup = ({ onStartGame, isLoading: externalLoading = false }: Player
             max="12"
             value={count}
             onChange={handlePlayerCountChange}
-            className="w-3/4 mx-2"
+          className="w-3/4 mx-2 accent-red-700"
           />
           <span className="text-sm">12</span>
         </div>
         
-        <div className="text-center text-xl font-bold">{count} 人</div>
+        <div className="text-center text-3xl font-bold text-amber-200">{count} 人</div>
         
-        {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
+        {error && <p className="text-red-300 text-sm mt-2">{error}</p>}
         
-        <div className="mt-2 text-sm text-gray-400">
+        <div className="mt-3 rounded-md border border-stone-700/70 bg-stone-950/40 p-3 text-sm text-stone-400">
           {count % 2 === 0 ? (
             <p>每个阵营将有 {count / 2} 名玩家</p>
           ) : (
@@ -81,7 +81,7 @@ const PlayerSetup = ({ onStartGame, isLoading: externalLoading = false }: Player
       <button
         onClick={handleStartGame}
         disabled={count < 6 || count > 12 || isLoading}
-        className={`w-full py-2 px-4 rounded-md ${count < 6 || count > 12 || isLoading ? 'bg-gray-600 cursor-not-allowed' : 'bg-red-600 hover:bg-red-700'}`}
+        className={`w-full ${count < 6 || count > 12 || isLoading ? 'bb-button-secondary' : 'bb-button-primary'}`}
       >
         {isLoading ? '创建中...' : '下一步：创建房间'}
       </button>

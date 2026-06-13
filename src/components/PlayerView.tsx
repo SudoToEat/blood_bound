@@ -124,17 +124,17 @@ const PlayerView = ({ player, allPlayers, onBack, hideBackButton = false, isPlay
   // 如果有错误，显示错误信息
   if (error) {
     return (
-      <div className="bg-gray-800 rounded-lg p-6 w-full max-w-lg mx-auto">
+      <div className="bb-panel w-full max-w-lg mx-auto p-6">
         <div className="text-center mb-6">
           <div className="text-yellow-500 text-6xl mb-4">⚠️</div>
           <h2 className="text-2xl font-bold text-red-400">{error}</h2>
-          <p className="text-sm text-gray-400 mt-2">请稍后再试或联系主持人</p>
+          <p className="text-sm text-stone-400 mt-2">请稍后再试或联系主持人</p>
         </div>
         {!hideBackButton && (
           <div className="flex justify-center">
             <button
               onClick={onBack}
-              className="px-6 py-2 bg-blue-600 hover:bg-blue-700 rounded-md"
+              className="bb-button-blue"
             >
               返回
             </button>
@@ -147,7 +147,7 @@ const PlayerView = ({ player, allPlayers, onBack, hideBackButton = false, isPlay
   // 如果正在加载，显示加载状态
   if (!isLoaded) {
     return (
-      <div className="bg-gray-800 rounded-lg p-6 w-full max-w-lg mx-auto">
+      <div className="bb-panel w-full max-w-lg mx-auto p-6">
         <LoadingSpinner size="lg" message="正在加载身份信息..." />
       </div>
     );
@@ -159,14 +159,14 @@ const PlayerView = ({ player, allPlayers, onBack, hideBackButton = false, isPlay
   const previousPlayerInfo = allPlayers ? getPreviousPlayerDisplayedFaction(allPlayers, player.id) : null
 
   return (
-    <div className="bg-gray-800 rounded-lg p-6 w-full max-w-lg mx-auto">
+    <div className="bb-panel w-full max-w-lg mx-auto p-6">
       {/* 规则弹窗 */}
       {showRules && <RulesModal onClose={() => setShowRules(false)} />}
 
       {/* 房间号显示 */}
       {state.roomId && (
-        <div className="mb-4 p-2 bg-blue-900 border border-blue-700 rounded-lg text-center">
-          <span className="text-xs text-blue-300">房间号:</span>
+        <div className="bb-panel-muted mb-4 p-2 text-center">
+          <span className="text-xs text-blue-200">房间号:</span>
           <span className="ml-2 text-lg font-mono font-bold text-blue-100">{state.roomId}</span>
         </div>
       )}
@@ -181,13 +181,13 @@ const PlayerView = ({ player, allPlayers, onBack, hideBackButton = false, isPlay
                   type="text"
                   value={playerName}
                   onChange={(e) => setPlayerName(e.target.value)}
-                  className="px-3 py-1 bg-gray-700 text-white rounded border border-gray-600 focus:outline-none focus:border-blue-500"
+                  className="bb-input py-1"
                   placeholder="输入姓名"
                   maxLength={10}
                 />
                 <button
                   onClick={handleSaveName}
-                  className="px-3 py-1 bg-green-600 hover:bg-green-700 text-white rounded text-sm"
+                  className="bb-button-gold px-3 py-1 text-sm"
                 >
                   保存
                 </button>
@@ -196,18 +196,18 @@ const PlayerView = ({ player, allPlayers, onBack, hideBackButton = false, isPlay
                     setIsEditingName(false);
                     setPlayerName(player.name || '');
                   }}
-                  className="px-3 py-1 bg-gray-600 hover:bg-gray-700 text-white rounded text-sm"
+                  className="bb-button-secondary px-3 py-1 text-sm"
                 >
                   取消
                 </button>
               </div>
             ) : (
               <>
-                <h2 className="text-2xl font-bold">{getPlayerDisplayName()} 的身份</h2>
+                <h2 className="bb-title text-2xl">{getPlayerDisplayName()} 的身份</h2>
                 {isPlayerAccess && (
                   <button
                     onClick={() => setIsEditingName(true)}
-                    className="text-gray-400 hover:text-white p-1"
+                    className="bb-icon-button h-8 w-8"
                     title="修改姓名"
                   >
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -220,7 +220,7 @@ const PlayerView = ({ player, allPlayers, onBack, hideBackButton = false, isPlay
           </div>
           <button
             onClick={() => setShowRules(true)}
-            className="text-gray-400 hover:text-white p-1"
+            className="bb-icon-button h-9 w-9"
             title="查看规则"
           >
             <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -228,15 +228,15 @@ const PlayerView = ({ player, allPlayers, onBack, hideBackButton = false, isPlay
             </svg>
           </button>
         </div>
-        <p className="text-sm text-gray-400">请不要让其他玩家看到此屏幕</p>
+        <p className="text-sm text-stone-400">请不要让其他玩家看到此屏幕</p>
       </div>
 
       {/* 显示上一个玩家的阵营颜色 - 仅在玩家访问模式下显示 */}
       {isPlayerAccess && previousPlayerInfo && (
-        <div className="mb-6 bg-gray-700 p-4 rounded-lg border-2 border-purple-500">
+        <div className="bb-panel-muted mb-6 border-purple-500/60 p-4">
           <h4 className="font-bold mb-2 text-purple-300">前一个玩家信息</h4>
           <div className="flex items-center justify-between">
-            <span className="text-sm text-gray-300">
+            <span className="text-sm text-stone-300">
               {previousPlayerInfo.player.name || `玩家 ${previousPlayerInfo.player.id}`} 的阵营:
             </span>
             <span className={`font-bold text-lg ${getFactionColor(previousPlayerInfo.displayedFaction)}`}>
@@ -252,7 +252,7 @@ const PlayerView = ({ player, allPlayers, onBack, hideBackButton = false, isPlay
           <img
             src={getCharacterCardImage(player.characterType)}
             alt={getCharacterName(player.characterType)}
-            className="w-full max-w-md rounded-lg shadow-lg"
+            className="w-full max-w-md rounded-lg border border-amber-500/30 bg-stone-950 shadow-2xl"
             onError={(e) => {
               const target = e.target as HTMLImageElement
               // 如果图片加载失败，显示占位符
@@ -263,22 +263,22 @@ const PlayerView = ({ player, allPlayers, onBack, hideBackButton = false, isPlay
 
         <div className="flex justify-between items-center mb-4">
           <div>
-            <h3 className="text-lg font-bold">{getCharacterName(player.characterType)}</h3>
+            <h3 className="bb-title text-xl">{getCharacterName(player.characterType)}</h3>
             <p className={`${factionColorClass} font-bold`}>{getFactionName(player.faction)}</p>
           </div>
-          <div className="text-3xl font-bold bg-gray-700 w-12 h-12 flex items-center justify-center rounded-full">
+          <div className="flex h-12 w-12 items-center justify-center rounded-full border border-amber-400/40 bg-stone-950 text-3xl font-bold text-amber-200">
             {player.rank}
           </div>
         </div>
 
-        <div className="bg-gray-700 p-4 rounded-lg mb-4">
-          <h4 className="font-bold mb-2">角色能力</h4>
+        <div className="bb-panel-muted p-4 mb-4">
+          <h4 className="bb-title mb-2 text-lg">角色能力</h4>
           <p>{getCharacterAbilityDescription(player.characterType)}</p>
         </div>
 
-        <div className="bg-gray-700 p-4 rounded-lg">
-          <h4 className="font-bold mb-2">游戏提示</h4>
-          <ul className="list-disc pl-5 space-y-1 text-sm">
+        <div className="bb-panel-muted p-4">
+          <h4 className="bb-title mb-2 text-lg">游戏提示</h4>
+          <ul className="list-disc pl-5 space-y-1 text-sm text-stone-300">
             <li>你的目标是找出并杀掉对方阵营的族长（等级为1的角色）</li>
             <li>被攻击时，你需要展示一个线索（阵营或等级）</li>
             <li>展示线索后，你可以发动自己的角色能力</li>
@@ -293,7 +293,7 @@ const PlayerView = ({ player, allPlayers, onBack, hideBackButton = false, isPlay
 
         {/* 调查官专属：显示给下家展示的阵营颜色 */}
         {player.characterType === CharacterType.Inquisitor && player.displayedFactionToNext && (
-          <div className="bg-purple-900 border-2 border-purple-500 p-4 rounded-lg mt-4">
+          <div className="mt-4 rounded-lg border border-purple-500/60 bg-purple-950/60 p-4">
             <h4 className="font-bold mb-2 text-purple-300">你向下一位玩家展示的阵营</h4>
             <div className="flex items-center justify-center">
               <span className={`text-2xl font-bold ${
@@ -302,7 +302,7 @@ const PlayerView = ({ player, allPlayers, onBack, hideBackButton = false, isPlay
                 {player.displayedFactionToNext === 'red' ? '🔴 凤凰氏族（红色）' : '🔵 石像鬼氏族（蓝色）'}
               </span>
             </div>
-            <p className="text-xs text-gray-400 text-center mt-2">
+            <p className="text-xs text-stone-400 text-center mt-2">
               这个颜色在整局游戏中保持不变
             </p>
           </div>
@@ -310,16 +310,16 @@ const PlayerView = ({ player, allPlayers, onBack, hideBackButton = false, isPlay
 
         {/* 显示已展示的线索 - 对主机和玩家都显示 */}
         {player.reveals && player.reveals.length > 0 && (
-          <div className="bg-gray-700 p-4 rounded-lg mt-4">
-            <h4 className="font-bold mb-2">已展示线索 ({player.reveals.length} / 3)</h4>
+          <div className="bb-panel-muted p-4 rounded-lg mt-4">
+            <h4 className="bb-title mb-2 text-lg">已展示线索 ({player.reveals.length} / 3)</h4>
             <div className="flex flex-wrap gap-2">
               {player.reveals.map((reveal, index) => (
                 <div
                   key={index}
-                  className={`px-3 py-1 rounded-full text-sm font-bold ${
-                    reveal === 'red' ? 'bg-red-600' :
-                    reveal === 'blue' ? 'bg-blue-600' :
-                    'bg-gray-600'
+                  className={`rounded-full border px-3 py-1 text-sm font-bold ${
+                    reveal === 'red' ? 'border-red-400/30 bg-red-700' :
+                    reveal === 'blue' ? 'border-blue-400/30 bg-blue-800' :
+                    'bg-stone-700'
                   }`}
                 >
                   {reveal === 'red' ? '🔴 红色(凤凰)' :
@@ -340,53 +340,53 @@ const PlayerView = ({ player, allPlayers, onBack, hideBackButton = false, isPlay
             <button
               onClick={() => handleReveal('red')}
               disabled={player.reveals && player.reveals.length >= 3}
-              className="py-3 bg-red-600 text-white font-bold rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 disabled:bg-gray-500 disabled:cursor-not-allowed"
+              className="rounded-md border border-red-400/40 bg-red-700 py-3 font-bold text-white transition-colors hover:bg-red-800 disabled:cursor-not-allowed disabled:bg-stone-600 disabled:opacity-60"
             >
               显示红色
             </button>
             <button
               onClick={() => handleReveal('blue')}
               disabled={player.reveals && player.reveals.length >= 3}
-              className="py-3 bg-blue-600 text-white font-bold rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:bg-gray-500 disabled:cursor-not-allowed"
+              className="rounded-md border border-blue-400/40 bg-blue-800 py-3 font-bold text-white transition-colors hover:bg-blue-900 disabled:cursor-not-allowed disabled:bg-stone-600 disabled:opacity-60"
             >
               显示蓝色
             </button>
             <button
               onClick={() => handleReveal('unknown')}
               disabled={player.reveals && player.reveals.length >= 3}
-              className="py-3 bg-gray-600 text-white font-bold rounded-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 disabled:bg-gray-500 disabled:cursor-not-allowed"
+              className="rounded-md border border-stone-400/40 bg-stone-700 py-3 font-bold text-white transition-colors hover:bg-stone-800 disabled:cursor-not-allowed disabled:bg-stone-600 disabled:opacity-60"
             >
               显示问号
             </button>
           </div>
-          <p className="text-center text-xs text-gray-500 mt-2">
+          <p className="text-center text-xs text-stone-500 mt-2">
             点击按钮向主持人展示线索
           </p>
 
           {/* 审判官诅咒卡分配 */}
           {player.characterType === CharacterType.Inquisitor && (
-            <div className="mt-6 pt-4 border-t border-gray-600">
+            <div className="mt-6 border-t pt-4 bb-divider">
               <h4 className="font-bold mb-2 text-yellow-400 text-center">
                 诅咒卡分配 {player.curseDistributed ? '(已分配)' : '(可用)'}
               </h4>
 
               {!player.curseDistributed ? (
                 <>
-                  <div className="text-xs text-center text-gray-400 mb-3">
+                  <div className="text-xs text-center text-stone-400 mb-3">
                     可用诅咒：真诅咒 {getAllocatedCounts().real}/{getCurseCardCounts().real} | 假诅咒 {getAllocatedCounts().fake}/{getCurseCardCounts().fake}
                   </div>
 
                   <div className="space-y-2 max-h-64 overflow-y-auto">
                     {allPlayers?.filter(p => p.id !== player.id).map(targetPlayer => (
-                      <div key={targetPlayer.id} className="bg-gray-700 p-2 rounded flex items-center justify-between">
+                      <div key={targetPlayer.id} className="bb-panel-muted flex items-center justify-between p-2">
                         <span className="text-sm">{targetPlayer.name || `玩家 ${targetPlayer.id}`}</span>
                         <div className="flex gap-1">
                           <button
                             onClick={() => handleCurseAllocation(targetPlayer.id, null)}
                             className={`px-2 py-1 text-xs rounded ${
                               !curseAllocations[targetPlayer.id]
-                                ? 'bg-gray-600 text-white'
-                                : 'bg-gray-800 text-gray-400 hover:bg-gray-600'
+                                ? 'bg-stone-600 text-white'
+                                : 'bg-stone-900 text-stone-400 hover:bg-stone-700'
                             }`}
                           >
                             不给
@@ -397,7 +397,7 @@ const PlayerView = ({ player, allPlayers, onBack, hideBackButton = false, isPlay
                             className={`px-2 py-1 text-xs rounded ${
                               curseAllocations[targetPlayer.id] === 'fake'
                                 ? 'bg-purple-600 text-white'
-                                : 'bg-gray-800 text-gray-400 hover:bg-purple-600 disabled:opacity-30 disabled:cursor-not-allowed'
+                                : 'bg-stone-900 text-stone-400 hover:bg-purple-600 disabled:opacity-30 disabled:cursor-not-allowed'
                             }`}
                           >
                             假诅咒
@@ -408,7 +408,7 @@ const PlayerView = ({ player, allPlayers, onBack, hideBackButton = false, isPlay
                             className={`px-2 py-1 text-xs rounded ${
                               curseAllocations[targetPlayer.id] === 'real'
                                 ? 'bg-orange-600 text-white'
-                                : 'bg-gray-800 text-gray-400 hover:bg-orange-600 disabled:opacity-30 disabled:cursor-not-allowed'
+                                : 'bg-stone-900 text-stone-400 hover:bg-orange-600 disabled:opacity-30 disabled:cursor-not-allowed'
                             }`}
                           >
                             真诅咒
@@ -420,18 +420,18 @@ const PlayerView = ({ player, allPlayers, onBack, hideBackButton = false, isPlay
 
                   <button
                     onClick={handleConfirmCurseDistribution}
-                    className="w-full mt-3 py-2 bg-yellow-600 hover:bg-yellow-700 text-white font-bold rounded-md"
+                    className="bb-button-gold mt-3 w-full"
                   >
                     确认分配诅咒卡
                   </button>
                 </>
               ) : (
-                <p className="text-center text-sm text-green-400 mt-2">
+                <p className="text-center text-sm text-emerald-300 mt-2">
                   诅咒卡已分配完成
                 </p>
               )}
 
-              <p className="text-center text-xs text-gray-500 mt-2">
+              <p className="text-center text-xs text-stone-500 mt-2">
                 整局游戏只能分配一次
               </p>
             </div>
@@ -443,7 +443,7 @@ const PlayerView = ({ player, allPlayers, onBack, hideBackButton = false, isPlay
           <div className="flex justify-center">
             <button
               onClick={onBack}
-              className="px-6 py-2 bg-blue-600 hover:bg-blue-700 rounded-md"
+              className="bb-button-blue"
             >
               返回
             </button>

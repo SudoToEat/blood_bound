@@ -34,16 +34,16 @@ const Toast: React.FC<ToastProps> = ({ id, type, message, duration = 3000, onClo
   }
 
   const getStyles = () => {
-    const baseStyles = 'rounded-lg shadow-lg p-4 flex items-center gap-3 min-w-[300px] max-w-[500px]'
+    const baseStyles = 'rounded-lg border shadow-2xl p-4 flex items-center gap-3 min-w-[300px] max-w-[500px]'
     switch (type) {
       case 'success':
-        return `${baseStyles} bg-green-600 text-white`
+        return `${baseStyles} border-emerald-400/30 bg-emerald-800 text-white`
       case 'error':
-        return `${baseStyles} bg-red-600 text-white`
+        return `${baseStyles} border-red-400/30 bg-red-800 text-white`
       case 'warning':
-        return `${baseStyles} bg-yellow-600 text-white`
+        return `${baseStyles} border-amber-400/30 bg-amber-800 text-white`
       case 'info':
-        return `${baseStyles} bg-blue-600 text-white`
+        return `${baseStyles} border-blue-400/30 bg-blue-800 text-white`
     }
   }
 
@@ -56,7 +56,7 @@ const Toast: React.FC<ToastProps> = ({ id, type, message, duration = 3000, onClo
       <div className="flex-1 text-sm font-medium">{message}</div>
       <button
         onClick={() => onClose(id)}
-        className="text-white hover:text-gray-200 transition-colors"
+        className="text-white transition-colors hover:text-stone-200"
         aria-label="关闭"
       >
         ✕

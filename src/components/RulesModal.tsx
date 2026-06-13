@@ -11,13 +11,13 @@ const RulesModal = ({ onClose }: RulesModalProps) => {
   const [activeTab, setActiveTab] = useState<'overview' | 'characters' | 'abilities' | 'reference'>('overview')
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4 overflow-y-auto">
-      <div className="bg-gray-800 rounded-lg shadow-lg w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
-        <div className="flex justify-between items-center p-4 border-b border-gray-700">
-          <h2 className="text-2xl font-bold text-red-500">游戏规则</h2>
+    <div className="bb-modal-backdrop">
+      <div className="bb-panel flex max-h-[90vh] w-full max-w-4xl flex-col overflow-hidden">
+        <div className="flex items-center justify-between border-b p-4 bb-divider">
+          <h2 className="bb-title text-2xl text-red-200">游戏规则</h2>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-white"
+            className="bb-icon-button"
           >
             <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -25,37 +25,37 @@ const RulesModal = ({ onClose }: RulesModalProps) => {
           </button>
         </div>
 
-        <div className="flex border-b border-gray-700">
+        <div className="flex overflow-x-auto border-b bb-divider">
           <button
-            className={`px-4 py-2 ${activeTab === 'overview' ? 'bg-gray-700 text-white' : 'text-gray-400'}`}
+            className={`whitespace-nowrap px-4 py-3 text-sm font-semibold transition-colors ${activeTab === 'overview' ? 'bg-stone-800 text-amber-200' : 'text-stone-400 hover:text-stone-100'}`}
             onClick={() => setActiveTab('overview')}
           >
             游戏概述
           </button>
           <button
-            className={`px-4 py-2 ${activeTab === 'characters' ? 'bg-gray-700 text-white' : 'text-gray-400'}`}
+            className={`whitespace-nowrap px-4 py-3 text-sm font-semibold transition-colors ${activeTab === 'characters' ? 'bg-stone-800 text-amber-200' : 'text-stone-400 hover:text-stone-100'}`}
             onClick={() => setActiveTab('characters')}
           >
             角色能力
           </button>
           <button
-            className={`px-4 py-2 ${activeTab === 'abilities' ? 'bg-gray-700 text-white' : 'text-gray-400'}`}
+            className={`whitespace-nowrap px-4 py-3 text-sm font-semibold transition-colors ${activeTab === 'abilities' ? 'bg-stone-800 text-amber-200' : 'text-stone-400 hover:text-stone-100'}`}
             onClick={() => setActiveTab('abilities')}
           >
             能力卡
           </button>
           <button
-            className={`px-4 py-2 ${activeTab === 'reference' ? 'bg-gray-700 text-white' : 'text-gray-400'}`}
+            className={`whitespace-nowrap px-4 py-3 text-sm font-semibold transition-colors ${activeTab === 'reference' ? 'bg-stone-800 text-amber-200' : 'text-stone-400 hover:text-stone-100'}`}
             onClick={() => setActiveTab('reference')}
           >
             参考卡
           </button>
         </div>
 
-        <div className="p-4 overflow-y-auto">
+        <div className="overflow-y-auto p-4 text-stone-200">
           {activeTab === 'overview' && (
             <div>
-              <h3 className="text-xl font-bold mb-4">游戏简介</h3>
+              <h3 className="bb-title text-xl mb-4">游戏简介</h3>
               <p className="mb-4">
                 鲜血盟约(Blood Bound)是一款阵营推理类桌游。玩家会分成两大阵营（凤凰氏族和石像鬼氏族），游戏目标是通过攻击玩家来找出阵营和等级信息，并刺杀真正的族长（等级数字最小）来达成胜利。
               </p>
@@ -63,7 +63,7 @@ const RulesModal = ({ onClose }: RulesModalProps) => {
                 在游戏过程中，玩家的身份是秘密，只能透过攻击彼此来揭露对方的阵营和等级线索。
               </p>
 
-              <h3 className="text-xl font-bold mb-4 mt-6">游戏流程</h3>
+              <h3 className="bb-title text-xl mb-4 mt-6">游戏流程</h3>
               <p className="mb-2">拿到匕首的玩家可以从【攻击】和【跳过】两种行动中选择做一个。流程如下：</p>
               <ol className="list-decimal pl-6 space-y-2">
                 <li>宣告【攻击】目标，或【跳过】</li>
@@ -74,15 +74,15 @@ const RulesModal = ({ onClose }: RulesModalProps) => {
                 <li>将匕首给受伤的玩家</li>
               </ol>
 
-              <h3 className="text-xl font-bold mb-4 mt-6">专有名词解释</h3>
+              <h3 className="bb-title text-xl mb-4 mt-6">专有名词解释</h3>
 
               <div className="space-y-4">
-                <div className="bg-gray-700 p-3 rounded">
+                <div className="bb-panel-muted p-3">
                   <h4 className="font-bold mb-2 text-red-400">【攻击】</h4>
                   <p className="text-sm">攻击一位玩家，并将匕首给受伤的玩家。</p>
                 </div>
 
-                <div className="bg-gray-700 p-3 rounded">
+                <div className="bb-panel-muted p-3">
                   <h4 className="font-bold mb-2 text-blue-400">【干涉】</h4>
                   <p className="text-sm mb-2">当有玩家要被攻击时，其他玩家可以跳出来发动干涉（挡刀的意思），被指定攻击的玩家如果同意干涉，就会变成发动干涉的玩家受伤，原本被指定攻击的玩家没事。</p>
                   <ul className="text-sm list-disc pl-5 space-y-1">
@@ -92,7 +92,7 @@ const RulesModal = ({ onClose }: RulesModalProps) => {
                   </ul>
                 </div>
 
-                <div className="bg-gray-700 p-3 rounded">
+                <div className="bb-panel-muted p-3">
                   <h4 className="font-bold mb-2 text-yellow-400">【受伤】</h4>
                   <p className="text-sm mb-2">当玩家被攻击受伤时，就必须拿一个阵营指示物或等级指示物。看自己角色卡右上方的符号，只能从三个中拿一个对应的指示物。</p>
                   <ul className="text-sm list-disc pl-5 space-y-1">
@@ -101,13 +101,13 @@ const RulesModal = ({ onClose }: RulesModalProps) => {
                   </ul>
                 </div>
 
-                <div className="bg-gray-700 p-3 rounded">
+                <div className="bb-panel-muted p-3">
                   <h4 className="font-bold mb-2 text-green-400">【跳过】</h4>
                   <p className="text-sm">玩家可以选择不攻击，直接把匕首给任意一位玩家。</p>
                 </div>
               </div>
 
-              <h3 className="text-xl font-bold mb-4 mt-6">游戏结束</h3>
+              <h3 className="bb-title text-xl mb-4 mt-6">游戏结束</h3>
               <div className="space-y-2 text-sm">
                 <p>当有一位玩家被扣四滴血时就死亡，游戏立刻结束，所有玩家翻开角色卡。</p>
                 <ul className="list-disc pl-5 space-y-1">
@@ -125,12 +125,12 @@ const RulesModal = ({ onClose }: RulesModalProps) => {
               {Array.from({ length: 9 }, (_, i) => i + 1).map((characterId) => {
                 const characterType = characterId as CharacterType
                 return (
-                  <div key={'phoenix-' + characterId} className="bg-gray-700 p-4 rounded-lg">
+                  <div key={'phoenix-' + characterId} className="bb-panel-muted p-4">
                     <div className="flex justify-between items-center mb-2">
                       <h3 className="text-lg font-bold">
                         {getCharacterName(characterType)}
                       </h3>
-                      <span className="px-2 py-1 rounded-full text-sm bg-red-800 text-red-200">
+                      <span className="rounded-full border border-red-400/30 bg-red-900/70 px-2 py-1 text-sm text-red-200">
                         凤凰氏族
                       </span>
                     </div>
@@ -142,12 +142,12 @@ const RulesModal = ({ onClose }: RulesModalProps) => {
               {Array.from({ length: 9 }, (_, i) => i + 1).map((characterId) => {
                 const characterType = characterId as CharacterType
                 return (
-                  <div key={'gargoyle-' + characterId} className="bg-gray-700 p-4 rounded-lg">
+                  <div key={'gargoyle-' + characterId} className="bb-panel-muted p-4">
                     <div className="flex justify-between items-center mb-2">
                       <h3 className="text-lg font-bold">
                         {getCharacterName(characterType)}
                       </h3>
-                      <span className="px-2 py-1 rounded-full text-sm bg-blue-800 text-blue-200">
+                      <span className="rounded-full border border-blue-400/30 bg-blue-900/70 px-2 py-1 text-sm text-blue-200">
                         石像鬼氏族
                       </span>
                     </div>
@@ -156,12 +156,12 @@ const RulesModal = ({ onClose }: RulesModalProps) => {
                 )
               })}
               {/* 中立角色10 */}
-              <div key={'neutral-10'} className="bg-gray-700 p-4 rounded-lg">
+              <div key={'neutral-10'} className="bb-panel-muted p-4">
                 <div className="flex justify-between items-center mb-2">
                   <h3 className="text-lg font-bold">
                     {getCharacterName(10 as CharacterType)}
                   </h3>
-                  <span className="px-2 py-1 rounded-full text-sm bg-yellow-800 text-yellow-200">
+                  <span className="rounded-full border border-amber-400/30 bg-amber-900/70 px-2 py-1 text-sm text-amber-200">
                     中立
                   </span>
                 </div>
@@ -172,27 +172,27 @@ const RulesModal = ({ onClose }: RulesModalProps) => {
 
           {activeTab === 'abilities' && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="bg-gray-700 p-4 rounded-lg">
+              <div className="bb-panel-muted p-4">
                 <h3 className="text-lg font-bold mb-2">长剑</h3>
                 <p className="text-sm">卫士角色能力会获得长剑卡。</p>
               </div>
-              <div className="bg-gray-700 p-4 rounded-lg">
+              <div className="bb-panel-muted p-4">
                 <h3 className="text-lg font-bold mb-2">折扇</h3>
                 <p className="text-sm">舞妓角色能力会给予一名玩家折扇卡。有折扇卡的玩家，无法让其他玩家进行干涉。</p>
               </div>
-              <div className="bg-gray-700 p-4 rounded-lg">
+              <div className="bb-panel-muted p-4">
                 <h3 className="text-lg font-bold mb-2">法杖</h3>
                 <p className="text-sm">法师角色能力会给予自己和一名玩家法杖卡。有法杖卡的玩家拿阵营指示物时，只能拿未知阵营指示物。</p>
               </div>
-              <div className="bg-gray-700 p-4 rounded-lg">
+              <div className="bb-panel-muted p-4">
                 <h3 className="text-lg font-bold mb-2">盾牌</h3>
                 <p className="text-sm">卫士角色能力会给予一名玩家盾牌卡。其他玩家无法攻击或用能力伤害有盾牌卡的玩家。</p>
               </div>
-              <div className="bg-gray-700 p-4 rounded-lg">
+              <div className="bb-panel-muted p-4">
                 <h3 className="text-lg font-bold mb-2">诅咒</h3>
                 <p className="text-sm">调查官角色能力会使用诅咒卡。如果调查官将真诅咒卡给最终获胜的氏族族长，调查官单独获得胜利。</p>
               </div>
-              <div className="bg-gray-700 p-4 rounded-lg">
+              <div className="bb-panel-muted p-4">
                 <h3 className="text-lg font-bold mb-2">鹅毛笔</h3>
                 <p className="text-sm">长老角色能力会使用鹅毛笔能力，将数字最大的角色变成氏族族长。</p>
               </div>
@@ -201,26 +201,26 @@ const RulesModal = ({ onClose }: RulesModalProps) => {
 
           {activeTab === 'reference' && (
             <div className="flex flex-col items-center">
-              <h3 className="text-xl font-bold mb-4">角色和技能等级参考卡</h3>
-              <p className="text-sm text-gray-400 mb-4">角色在游戏开始时向左边玩家展示的是该对象族的标记</p>
+              <h3 className="bb-title text-xl mb-4">角色和技能等级参考卡</h3>
+              <p className="text-sm text-stone-400 mb-4">角色在游戏开始时向左边玩家展示的是该对象族的标记</p>
               <div className="w-full max-w-2xl">
                 <img
                   src={referenceCardImage}
                   alt="角色和技能等级参考卡"
-                  className="w-full h-auto rounded-lg shadow-lg"
+                  className="h-auto w-full rounded-lg border border-amber-500/30 bg-stone-950 shadow-2xl"
                   onError={(e) => {
                     e.currentTarget.style.display = 'none';
                     const parent = e.currentTarget.parentElement;
                     if (parent) {
                       const errorMsg = document.createElement('div');
-                      errorMsg.className = 'bg-gray-700 p-8 rounded-lg text-center';
+                      errorMsg.className = 'bg-stone-900 p-8 rounded-lg text-center border border-stone-700';
                       errorMsg.innerHTML = '<p class="text-gray-400">图片加载失败</p><p class="text-sm text-gray-500 mt-2">请重新构建并确认参考卡资源已打包</p>';
                       parent.appendChild(errorMsg);
                     }
                   }}
                 />
               </div>
-              <div className="mt-6 bg-gray-700 p-4 rounded-lg w-full">
+              <div className="bb-panel-muted mt-6 w-full p-4">
                 <h4 className="font-bold mb-2">说明：</h4>
                 <ul className="list-disc pl-5 space-y-1 text-sm">
                   <li>该角色在游戏开始时向左边玩家展示的是该对象族的标记。</li>
@@ -232,10 +232,10 @@ const RulesModal = ({ onClose }: RulesModalProps) => {
           )}
         </div>
 
-        <div className="p-4 border-t border-gray-700 flex justify-end">
+        <div className="flex justify-end border-t p-4 bb-divider">
           <button
             onClick={onClose}
-            className="px-4 py-2 bg-red-600 hover:bg-red-700 rounded-md"
+            className="bb-button-danger"
           >
             关闭
           </button>

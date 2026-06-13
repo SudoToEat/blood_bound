@@ -43,32 +43,32 @@ const ConnectionStatusBar = memo(({ className = '' }: ConnectionStatusBarProps) 
     switch (status) {
       case 'connected':
         return {
-          bg: 'bg-green-600',
+          bg: 'border-emerald-400/30 bg-emerald-800/95',
           icon: '✓',
           text: '已连接'
         }
       case 'connecting':
         return {
-          bg: 'bg-yellow-600',
+          bg: 'border-amber-400/30 bg-amber-800/95',
           icon: '⟳',
           text: '正在连接...'
         }
       case 'reconnecting':
         return {
-          bg: 'bg-yellow-600',
+          bg: 'border-amber-400/30 bg-amber-800/95',
           icon: '⟳',
           text: '重新连接中...'
         }
       case 'error':
         return {
-          bg: 'bg-red-600',
+          bg: 'border-red-400/30 bg-red-800/95',
           icon: '✗',
           text: '连接错误'
         }
       case 'disconnected':
       default:
         return {
-          bg: 'bg-gray-600',
+          bg: 'border-stone-400/30 bg-stone-800/95',
           icon: '○',
           text: '未连接'
         }
@@ -86,7 +86,7 @@ const ConnectionStatusBar = memo(({ className = '' }: ConnectionStatusBarProps) 
 
   return (
     <div
-      className={`fixed top-0 left-0 right-0 z-50 ${style.bg} text-white shadow-lg transition-all duration-300 ${className}`}
+      className={`fixed left-0 right-0 top-0 z-50 border-b ${style.bg} text-white shadow-2xl backdrop-blur transition-all duration-300 ${className}`}
       role="status"
       aria-live="polite"
     >
@@ -109,7 +109,7 @@ const ConnectionStatusBar = memo(({ className = '' }: ConnectionStatusBarProps) 
         {status === 'error' && (
           <button
             onClick={handleRefresh}
-            className="ml-4 px-3 py-1 bg-white bg-opacity-20 hover:bg-opacity-30 rounded text-xs font-bold transition-colors"
+            className="ml-4 rounded border border-white/20 bg-white/15 px-3 py-1 text-xs font-bold transition-colors hover:bg-white/25"
           >
             刷新页面
           </button>

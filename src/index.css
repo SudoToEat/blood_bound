@@ -8,8 +8,8 @@
   font-weight: 400;
 
   color-scheme: dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #111827;
+  color: #f4ead7;
+  background-color: #090706;
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -22,11 +22,146 @@ body {
   padding: 0;
   min-width: 320px;
   min-height: 100vh;
-  background-color: #111827;
+  background:
+    linear-gradient(135deg, rgba(78, 28, 28, 0.22), transparent 32%),
+    linear-gradient(225deg, rgba(24, 50, 82, 0.18), transparent 34%),
+    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.018) 0 1px, transparent 1px 5px),
+    linear-gradient(135deg, #090706 0%, #14100d 46%, #090a0f 100%);
 }
 
 #root {
   width: 100%;
   min-height: 100vh;
-  background-color: #111827;
+}
+
+@layer components {
+  .bb-page {
+    @apply min-h-screen text-stone-100;
+    background:
+      linear-gradient(rgba(9, 7, 6, 0.82), rgba(9, 7, 6, 0.94)),
+      repeating-linear-gradient(135deg, rgba(180, 140, 77, 0.035) 0 1px, transparent 1px 10px);
+  }
+
+  .bb-shell {
+    @apply w-full max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8;
+  }
+
+  .bb-panel {
+    @apply rounded-lg border shadow-2xl;
+    background: linear-gradient(180deg, rgba(34, 27, 22, 0.96), rgba(18, 15, 14, 0.98));
+    border-color: rgba(180, 140, 77, 0.32);
+    box-shadow: 0 18px 60px rgba(0, 0, 0, 0.36);
+  }
+
+  .bb-panel-muted {
+    @apply rounded-lg border;
+    background: rgba(22, 18, 16, 0.86);
+    border-color: rgba(148, 122, 82, 0.22);
+  }
+
+  .bb-title {
+    @apply font-bold tracking-normal text-stone-100;
+    font-family: Georgia, "Times New Roman", "Noto Serif SC", serif;
+  }
+
+  .bb-subtitle {
+    @apply text-sm text-stone-400;
+  }
+
+  .bb-button {
+    @apply inline-flex items-center justify-center rounded-md border px-4 py-2 text-sm font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50;
+  }
+
+  .bb-button-primary {
+    @apply inline-flex items-center justify-center rounded-md border px-4 py-2 text-sm font-semibold text-stone-50 transition-colors disabled:cursor-not-allowed disabled:opacity-50;
+    background: linear-gradient(180deg, #991b1b, #6f1414);
+    border-color: rgba(248, 113, 113, 0.38);
+  }
+
+  .bb-button-primary:hover:not(:disabled) {
+    background: linear-gradient(180deg, #b91c1c, #7f1d1d);
+  }
+
+  .bb-button-secondary {
+    @apply inline-flex items-center justify-center rounded-md border px-4 py-2 text-sm font-semibold text-stone-100 transition-colors disabled:cursor-not-allowed disabled:opacity-50;
+    background: rgba(41, 34, 29, 0.92);
+    border-color: rgba(180, 140, 77, 0.28);
+  }
+
+  .bb-button-secondary:hover:not(:disabled) {
+    background: rgba(58, 47, 39, 0.96);
+  }
+
+  .bb-button-blue {
+    @apply inline-flex items-center justify-center rounded-md border px-4 py-2 text-sm font-semibold text-stone-50 transition-colors disabled:cursor-not-allowed disabled:opacity-50;
+    background: linear-gradient(180deg, #1e3a8a, #172554);
+    border-color: rgba(96, 165, 250, 0.32);
+  }
+
+  .bb-button-gold {
+    @apply inline-flex items-center justify-center rounded-md border px-4 py-2 text-sm font-semibold text-stone-950 transition-colors disabled:cursor-not-allowed disabled:opacity-50;
+    background: linear-gradient(180deg, #d6a84f, #a97824);
+    border-color: rgba(254, 240, 138, 0.4);
+  }
+
+  .bb-button-danger {
+    @apply inline-flex items-center justify-center rounded-md border px-4 py-2 text-sm font-semibold text-stone-50 transition-colors disabled:cursor-not-allowed disabled:opacity-50;
+    background: linear-gradient(180deg, #7f1d1d, #4c0f0f);
+    border-color: rgba(248, 113, 113, 0.32);
+  }
+
+  .bb-icon-button {
+    @apply inline-flex h-10 w-10 items-center justify-center rounded-md border text-stone-300 transition-colors;
+    background: rgba(41, 34, 29, 0.88);
+    border-color: rgba(180, 140, 77, 0.24);
+  }
+
+  .bb-icon-button:hover {
+    @apply text-stone-50;
+    background: rgba(58, 47, 39, 0.96);
+  }
+
+  .bb-input {
+    @apply rounded-md border px-3 py-2 text-stone-100 outline-none transition-colors;
+    background: rgba(12, 10, 9, 0.82);
+    border-color: rgba(120, 113, 108, 0.42);
+  }
+
+  .bb-input:focus {
+    border-color: rgba(214, 168, 79, 0.7);
+  }
+
+  .bb-token {
+    @apply inline-flex items-center justify-center rounded-full border text-xs font-bold;
+    min-width: 1.5rem;
+    height: 1.5rem;
+  }
+
+  .bb-token-empty {
+    @apply text-stone-500;
+    background: rgba(28, 25, 23, 0.88);
+    border-color: rgba(120, 113, 108, 0.32);
+  }
+
+  .bb-table-felt {
+    background:
+      linear-gradient(rgba(10, 8, 7, 0.88), rgba(10, 8, 7, 0.92)),
+      repeating-linear-gradient(45deg, rgba(214, 168, 79, 0.035) 0 1px, transparent 1px 14px);
+  }
+
+  .bb-modal-backdrop {
+    @apply fixed inset-0 z-50 flex items-center justify-center overflow-y-auto p-4;
+    background: rgba(0, 0, 0, 0.78);
+    backdrop-filter: blur(4px);
+  }
+
+  .bb-chip {
+    @apply inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-semibold;
+    background: rgba(41, 34, 29, 0.78);
+    border-color: rgba(180, 140, 77, 0.24);
+  }
+
+  .bb-divider {
+    border-color: rgba(180, 140, 77, 0.2);
+  }
 }

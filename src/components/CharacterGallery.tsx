@@ -31,48 +31,48 @@ export const CharacterGallery: React.FC<CharacterGalleryProps> = ({ className = 
     <div className={`space-y-6 ${className}`}>
       {/* 标题 */}
       <div className="text-center">
-        <h2 className="text-2xl font-bold text-gray-800 mb-2">角色图鉴</h2>
-        <p className="text-gray-600">了解血契猎杀中的所有角色</p>
+        <h2 className="bb-title mb-2 text-2xl">角色图鉴</h2>
+        <p className="text-stone-400">了解血契猎杀中的所有角色</p>
       </div>
 
       {/* 阵营筛选 */}
-      <div className="flex justify-center space-x-4">
+      <div className="flex flex-wrap justify-center gap-3">
         <button
           onClick={() => setSelectedFaction('all')}
-          className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+          className={`rounded-md border px-4 py-2 font-medium transition-colors ${
             selectedFaction === 'all'
-              ? 'bg-blue-500 text-white'
-              : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+              ? 'border-amber-400/40 bg-amber-800 text-white'
+              : 'border-stone-600 bg-stone-900 text-stone-300 hover:bg-stone-800'
           }`}
         >
           全部阵营
         </button>
         <button
           onClick={() => setSelectedFaction(Faction.Phoenix)}
-          className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+          className={`rounded-md border px-4 py-2 font-medium transition-colors ${
             selectedFaction === Faction.Phoenix
-              ? 'bg-red-500 text-white'
-              : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+              ? 'border-red-400/40 bg-red-800 text-white'
+              : 'border-stone-600 bg-stone-900 text-stone-300 hover:bg-stone-800'
           }`}
         >
           鳳凰氏族
         </button>
         <button
           onClick={() => setSelectedFaction(Faction.Gargoyle)}
-          className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+          className={`rounded-md border px-4 py-2 font-medium transition-colors ${
             selectedFaction === Faction.Gargoyle
-              ? 'bg-blue-500 text-white'
-              : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+              ? 'border-blue-400/40 bg-blue-800 text-white'
+              : 'border-stone-600 bg-stone-900 text-stone-300 hover:bg-stone-800'
           }`}
         >
           石像鬼氏族
         </button>
         <button
           onClick={() => setSelectedFaction(Faction.Neutral)}
-          className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+          className={`rounded-md border px-4 py-2 font-medium transition-colors ${
             selectedFaction === Faction.Neutral
-              ? 'bg-yellow-500 text-white'
-              : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+              ? 'border-amber-400/40 bg-amber-800 text-white'
+              : 'border-stone-600 bg-stone-900 text-stone-300 hover:bg-stone-800'
           }`}
         >
           中立角色
@@ -89,11 +89,11 @@ export const CharacterGallery: React.FC<CharacterGalleryProps> = ({ className = 
           return (
             <div
               key={faction + '-' + type + '-' + idx}
-              className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow cursor-pointer"
+              className="bb-panel-muted cursor-pointer overflow-hidden transition-colors hover:border-amber-500/40"
               onClick={() => setSelectedCharacter({ type, faction })}
             >
               {/* 角色图片 */}
-              <div className="relative h-48 bg-gradient-to-br from-gray-100 to-gray-200">
+              <div className="relative h-48 bg-stone-950">
                 <img
                   src={characterImage}
                   alt={characterName}
@@ -106,15 +106,15 @@ export const CharacterGallery: React.FC<CharacterGalleryProps> = ({ className = 
                 {/* 阵营标识 */}
                 <div className="absolute top-2 right-2">
                   <span className={`px-2 py-1 rounded-full text-xs font-medium text-white ${
-                    faction === Faction.Phoenix ? 'bg-red-500' :
-                    faction === Faction.Gargoyle ? 'bg-blue-500' : 'bg-yellow-500'
+                    faction === Faction.Phoenix ? 'bg-red-700' :
+                    faction === Faction.Gargoyle ? 'bg-blue-800' : 'bg-amber-700'
                   }`}>
                     {factionName}
                   </span>
                 </div>
                 {/* 等级标识 */}
                 <div className="absolute top-2 left-2">
-                  <span className="px-2 py-1 rounded-full text-xs font-medium bg-gray-800 text-white">
+                  <span className="rounded-full border border-stone-400/30 bg-stone-950/80 px-2 py-1 text-xs font-medium text-white">
                     等级 {type}
                   </span>
                 </div>
@@ -122,11 +122,11 @@ export const CharacterGallery: React.FC<CharacterGalleryProps> = ({ className = 
 
               {/* 角色信息 */}
               <div className="p-4">
-                <h3 className="text-lg font-bold text-gray-800 mb-2">{characterName}</h3>
-                <p className="text-sm text-gray-600 mb-3">
+                <h3 className="bb-title mb-2 text-lg">{characterName}</h3>
+                <p className="mb-3 text-sm text-stone-400">
                   {getCharacterAbilityDescription(type).substring(0, 60)}...
                 </p>
-                <button className="w-full py-2 px-4 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors text-sm">
+                <button className="bb-button-blue w-full">
                   查看详情
                 </button>
               </div>
@@ -137,13 +137,13 @@ export const CharacterGallery: React.FC<CharacterGalleryProps> = ({ className = 
 
       {/* 角色详情模态框 */}
       {selectedCharacter && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="flex justify-between items-center p-6 border-b">
-              <h3 className="text-xl font-bold">角色详情</h3>
+        <div className="bb-modal-backdrop">
+          <div className="bb-panel max-h-[90vh] w-full max-w-2xl overflow-y-auto">
+            <div className="flex items-center justify-between border-b p-6 bb-divider">
+              <h3 className="bb-title text-xl">角色详情</h3>
               <button
                 onClick={() => setSelectedCharacter(null)}
-                className="text-gray-500 hover:text-gray-700 text-2xl"
+                className="bb-icon-button"
               >
                 ✕
               </button>
