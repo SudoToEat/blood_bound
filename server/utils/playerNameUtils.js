@@ -1,3 +1,20 @@
+export const blockedPlayerNames = new Set([
+  '皇阿玛',
+  '太上皇',
+  '皇爸玛',
+  '我爹',
+  '爹',
+  '我大爷'
+]);
+
+export const isPlayerNameAllowed = name => {
+  if (typeof name !== 'string') {
+    return false;
+  }
+
+  return !blockedPlayerNames.has(name.trim());
+};
+
 export const buildPlayerNameMap = (...playerCollections) => {
   const nameMap = new Map();
 

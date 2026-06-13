@@ -1,6 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { buildPlayerNameMap, mergePlayerNames } from './playerNameUtils.js';
+import * as playerNameUtils from './playerNameUtils.js';
+
+const { buildPlayerNameMap, mergePlayerNames } = playerNameUtils;
 
 test('preserves custom names when a new game is started by the host', () => {
   const roomPlayerIdentities = [
@@ -51,4 +53,19 @@ test('ignores players without custom names and handles invalid collections', () 
     { id: 2, characterType: 6, name: 'Eva' },
     { id: 3, characterType: 7 }
   ]);
+});
+
+test('rejects blacklisted player names', () => {
+  [
+    '皇阿玛',
+    '太上皇',
+    '皇爸玛',
+    '我爹',
+    '爹',
+    '我大爷'
+  ].forEach(name => {
+    assert.equal(playerNameUtils.isPlayerNameAllowed?.(name), false);
+  });
+
+  assert.equal(playerNameUtils.isPlayerNameAllowed?.('Alice'), true);
 });

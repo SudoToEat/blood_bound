@@ -4,7 +4,7 @@ import { Server } from 'socket.io';
 import cors from 'cors';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { buildPlayerNameMap, mergePlayerNames } from './utils/playerNameUtils.js';
+import { buildPlayerNameMap, isPlayerNameAllowed, mergePlayerNames } from './utils/playerNameUtils.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -436,17 +436,18 @@ io.on('connection', (socket) => {
     // 处理更新玩家姓名动作
     if (action === 'updateName') {
       const playerIdentity = room.playerIdentities.find(p => p.id === playerId);
-      if (playerIdentity && data.name) {
-        playerIdentity.name = data.name;
+      const playerName = typeof data.name === 'string' ? data.name.trim() : '';
+      if (playerIdentity && playerName && isPlayerNameAllowed(playerName)) {
+        playerIdentity.name = playerName;
         room.lastActivity = Date.now();
 
-        console.log(`玩家 ${playerId} 更新姓名为: ${data.name}`);
+        console.log(`玩家 ${playerId} 更新姓名为: ${playerName}`);
 
         // 更新 room.gameState.players 以保持同步
         if (room.gameState && room.gameState.players) {
           const gameStatePlayer = room.gameState.players.find(p => p.id === playerId);
           if (gameStatePlayer) {
-            gameStatePlayer.name = data.name;
+            gameStatePlayer.name = playerName;
           }
         }
 
