@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { CharacterType } from '../types/gameTypes'
 import { getCharacterName, getCharacterAbilityDescription } from '../utils/gameUtils'
+import referenceCardImage from '../assets/rules/reference-card.jpg'
 
 interface RulesModalProps {
   onClose: () => void
@@ -14,7 +15,7 @@ const RulesModal = ({ onClose }: RulesModalProps) => {
       <div className="bg-gray-800 rounded-lg shadow-lg w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
         <div className="flex justify-between items-center p-4 border-b border-gray-700">
           <h2 className="text-2xl font-bold text-red-500">游戏规则</h2>
-          <button 
+          <button
             onClick={onClose}
             className="text-gray-400 hover:text-white"
           >
@@ -204,7 +205,7 @@ const RulesModal = ({ onClose }: RulesModalProps) => {
               <p className="text-sm text-gray-400 mb-4">角色在游戏开始时向左边玩家展示的是该对象族的标记</p>
               <div className="w-full max-w-2xl">
                 <img
-                  src="/src/assets/rules/reference-card.jpg"
+                  src={referenceCardImage}
                   alt="角色和技能等级参考卡"
                   className="w-full h-auto rounded-lg shadow-lg"
                   onError={(e) => {
@@ -213,7 +214,7 @@ const RulesModal = ({ onClose }: RulesModalProps) => {
                     if (parent) {
                       const errorMsg = document.createElement('div');
                       errorMsg.className = 'bg-gray-700 p-8 rounded-lg text-center';
-                      errorMsg.innerHTML = '<p class="text-gray-400">图片加载失败</p><p class="text-sm text-gray-500 mt-2">请将参考卡图片保存到 src/assets/rules/reference-card.jpg</p>';
+                      errorMsg.innerHTML = '<p class="text-gray-400">图片加载失败</p><p class="text-sm text-gray-500 mt-2">请重新构建并确认参考卡资源已打包</p>';
                       parent.appendChild(errorMsg);
                     }
                   }}
@@ -232,7 +233,7 @@ const RulesModal = ({ onClose }: RulesModalProps) => {
         </div>
 
         <div className="p-4 border-t border-gray-700 flex justify-end">
-          <button 
+          <button
             onClick={onClose}
             className="px-4 py-2 bg-red-600 hover:bg-red-700 rounded-md"
           >

@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { CharacterType, Faction } from '../types/gameTypes'
 import { getCharacterName, getCharacterAbilityDescription, getFactionName } from '../utils/gameUtils'
-import { getCharacterImage } from '../assets/characters'
+import { fallbackCharacterImage, getCharacterImage } from '../assets/characters'
 import CharacterCard from './CharacterCard'
 
 interface CharacterGalleryProps {
@@ -40,8 +40,8 @@ export const CharacterGallery: React.FC<CharacterGalleryProps> = ({ className = 
         <button
           onClick={() => setSelectedFaction('all')}
           className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-            selectedFaction === 'all' 
-              ? 'bg-blue-500 text-white' 
+            selectedFaction === 'all'
+              ? 'bg-blue-500 text-white'
               : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
           }`}
         >
@@ -50,8 +50,8 @@ export const CharacterGallery: React.FC<CharacterGalleryProps> = ({ className = 
         <button
           onClick={() => setSelectedFaction(Faction.Phoenix)}
           className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-            selectedFaction === Faction.Phoenix 
-              ? 'bg-red-500 text-white' 
+            selectedFaction === Faction.Phoenix
+              ? 'bg-red-500 text-white'
               : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
           }`}
         >
@@ -60,8 +60,8 @@ export const CharacterGallery: React.FC<CharacterGalleryProps> = ({ className = 
         <button
           onClick={() => setSelectedFaction(Faction.Gargoyle)}
           className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-            selectedFaction === Faction.Gargoyle 
-              ? 'bg-blue-500 text-white' 
+            selectedFaction === Faction.Gargoyle
+              ? 'bg-blue-500 text-white'
               : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
           }`}
         >
@@ -70,8 +70,8 @@ export const CharacterGallery: React.FC<CharacterGalleryProps> = ({ className = 
         <button
           onClick={() => setSelectedFaction(Faction.Neutral)}
           className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-            selectedFaction === Faction.Neutral 
-              ? 'bg-yellow-500 text-white' 
+            selectedFaction === Faction.Neutral
+              ? 'bg-yellow-500 text-white'
               : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
           }`}
         >
@@ -100,7 +100,7 @@ export const CharacterGallery: React.FC<CharacterGalleryProps> = ({ className = 
                   className="w-full h-full object-cover"
                   onError={(e) => {
                     const target = e.target as HTMLImageElement
-                    target.src = '/src/assets/characters/default.svg'
+                    target.src = fallbackCharacterImage
                   }}
                 />
                 {/* 阵营标识 */}
@@ -148,7 +148,7 @@ export const CharacterGallery: React.FC<CharacterGalleryProps> = ({ className = 
                 ✕
               </button>
             </div>
-            
+
             <div className="p-6">
               <CharacterCard
                 characterType={selectedCharacter.type}
@@ -165,4 +165,4 @@ export const CharacterGallery: React.FC<CharacterGalleryProps> = ({ className = 
   )
 }
 
-export default CharacterGallery 
+export default CharacterGallery

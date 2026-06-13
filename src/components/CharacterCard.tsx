@@ -1,7 +1,7 @@
 import { memo, useMemo } from 'react'
 import { CharacterType, Faction } from '../types/gameTypes'
 import { getCharacterName, getCharacterAbilityDescription, getFactionName, getFactionColor } from '../utils/gameUtils'
-import { getCharacterImage, getCharacterBackground } from '../assets/characters'
+import { fallbackCharacterImage, getCharacterImage, getCharacterBackground } from '../assets/characters'
 
 interface CharacterCardProps {
   characterType: CharacterType
@@ -51,7 +51,7 @@ export const CharacterCard = memo<CharacterCardProps>(({
               onError={(e) => {
                 // 如果图片加载失败，显示默认图片
                 const target = e.target as HTMLImageElement
-                target.src = '/src/assets/characters/default.svg'
+                target.src = fallbackCharacterImage
               }}
             />
           </div>
@@ -103,4 +103,4 @@ export const CharacterCard = memo<CharacterCardProps>(({
 
 CharacterCard.displayName = 'CharacterCard'
 
-export default CharacterCard 
+export default CharacterCard

@@ -1,5 +1,5 @@
 import { Player } from '../types/gameTypes'
-import { getCharacterImage } from '../assets/characters'
+import { fallbackCharacterImage, getCharacterImage } from '../assets/characters'
 import { getCharacterName, getFactionName, getFactionColor } from '../utils/gameUtils'
 import { useState, useCallback, useMemo, memo } from 'react'
 
@@ -124,7 +124,7 @@ const PlayerCard = memo(({ player, onClick, showCharacterImage = false, onToggle
                 className="w-full h-full object-cover"
                 onError={(e) => {
                   const target = e.target as HTMLImageElement
-                  target.src = '/src/assets/characters/default.svg'
+                  target.src = fallbackCharacterImage
                 }}
               />
             </div>
@@ -156,7 +156,7 @@ const PlayerCard = memo(({ player, onClick, showCharacterImage = false, onToggle
           </div>
         )}
       </div>
-      
+
       {player.abilityCards.length > 0 && (
         <div className="mt-2 text-xs">
           <span className="text-gray-400">能力卡:</span>
@@ -197,7 +197,7 @@ const PlayerCard = memo(({ player, onClick, showCharacterImage = false, onToggle
           </div>
         </div>
       )}
-      
+
       <div className="mt-3 space-y-2">
         {/* 次要操作：揭示/隐藏身份 */}
         {onToggleReveal && (

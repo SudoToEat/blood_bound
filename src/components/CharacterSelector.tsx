@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { CharacterType, Faction } from '../types/gameTypes'
 import { getCharacterName } from '../utils/gameUtils'
-import { getCharacterImage } from '../assets/characters'
+import { fallbackCharacterImage, getCharacterImage } from '../assets/characters'
 import CharacterCard from './CharacterCard'
 
 interface CharacterSelectorProps {
@@ -63,10 +63,10 @@ export const CharacterSelector: React.FC<CharacterSelectorProps> = ({
             <div
               key={characterType}
               className={`relative cursor-pointer transition-all duration-200 ${
-                isSelected 
-                  ? 'ring-2 ring-blue-500 scale-105' 
-                  : isDisabled 
-                    ? 'opacity-50 cursor-not-allowed' 
+                isSelected
+                  ? 'ring-2 ring-blue-500 scale-105'
+                  : isDisabled
+                    ? 'opacity-50 cursor-not-allowed'
                     : 'hover:scale-105 hover:shadow-lg'
               }`}
               onClick={() => !isDisabled && handleCharacterClick(characterType)}
@@ -80,11 +80,11 @@ export const CharacterSelector: React.FC<CharacterSelectorProps> = ({
                     className="w-full h-full object-cover"
                     onError={(e) => {
                       const target = e.target as HTMLImageElement
-                      target.src = '/src/assets/characters/default.svg'
+                      target.src = fallbackCharacterImage
                     }}
                   />
                 </div>
-                
+
                 {/* 选择状态指示器 */}
                 {isSelected && (
                   <div className="absolute -top-1 -right-1 w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center">
@@ -160,4 +160,4 @@ export const CharacterSelector: React.FC<CharacterSelectorProps> = ({
   )
 }
 
-export default CharacterSelector 
+export default CharacterSelector
